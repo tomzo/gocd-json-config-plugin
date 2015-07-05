@@ -26,7 +26,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <go.target.version>15.1.0</go.target.version>
+        <go.target.version>15.2.0</go.target.version>
         <go.version>${project.version}</go.version>
         <plugin.version>${project.version}</plugin.version>
     </properties>
