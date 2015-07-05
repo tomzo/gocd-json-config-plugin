@@ -8,6 +8,7 @@ import com.thoughtworks.go.plugin.api.GoPlugin;
 import com.thoughtworks.go.plugin.api.GoPluginIdentifier;
 import com.thoughtworks.go.plugin.api.annotation.Extension;
 import com.thoughtworks.go.plugin.api.exceptions.UnhandledRequestTypeException;
+import com.thoughtworks.go.plugin.api.logging.Logger;
 import com.thoughtworks.go.plugin.api.request.GoPluginApiRequest;
 import com.thoughtworks.go.plugin.api.response.DefaultGoPluginApiResponse;
 import com.thoughtworks.go.plugin.api.response.GoPluginApiResponse;
@@ -20,10 +21,13 @@ import java.util.*;
 
 @Extension
 public class JsonConfigPlugin implements GoPlugin {
+    private static Logger LOGGER = Logger.getLoggerFor(JsonConfigPlugin.class);
+
     public static final String PLUGIN_SETTINGS_GET_CONFIGURATION = "go.plugin-settings.get-configuration";
     public static final String PLUGIN_SETTINGS_GET_VIEW = "go.plugin-settings.get-view";
     public static final String PLUGIN_SETTINGS_VALIDATE_CONFIGURATION = "go.plugin-settings.validate-configuration";
     public static final String PLUGIN_SETTINGS_ENVIRONMENT_PATTERN = "environment_pattern";
+    private static final String DEFAULT_ENVIRONMENT_PATTERN = ".*goenvironment.json";
 
     @Override
     public void initializeGoApplicationAccessor(GoApplicationAccessor goApplicationAccessor) {
@@ -83,7 +87,7 @@ public class JsonConfigPlugin implements GoPlugin {
 
     private GoPluginApiResponse handleGetPluginSettingsConfiguration() {
         Map<String, Object> response = new HashMap<String, Object>();
-        response.put(PLUGIN_SETTINGS_ENVIRONMENT_PATTERN, createField("Environment pattern", "**/*.goenvironment.json", false, false, "0"));
+        response.put(PLUGIN_SETTINGS_ENVIRONMENT_PATTERN, createField("Environment pattern", DEFAULT_ENVIRONMENT_PATTERN, false, false, "0"));
         return renderJSON(DefaultGoPluginApiResponse.SUCCESS_RESPONSE_CODE, response);
     }
     private Map<String, Object> createField(String displayName, String defaultValue, boolean isRequired, boolean isSecure, String displayOrder) {
@@ -117,26 +121,49 @@ public class JsonConfigPlugin implements GoPlugin {
 
     private GoPluginApiResponse handleParseDirectoryRequest(GoPluginApiRequest request) {
         //ParseDirectoryMessage_1 requestArguments;
-        JsonConfigCollection config = new JsonConfigCollection();
-        JsonFileParser parser = new JsonFileParser();
-        DirectoryScanner scanner = new DirectoryScanner();
-        for(File environmentFile : scanner.getEnvironmentFiles())
-        {
-            JsonElement env;
-            try {
-                env = parser.parseFile(environmentFile);
+        int responseCode;
+        Map<String, Object> response = new HashMap<String, Object>();
+        List<String> messages = new ArrayList<String>();
+        try {
+            Map<String, Object> dataMap = (Map<String, Object>) JSONUtils.fromJSON(request.requestBody());
+            String directory = (String) dataMap.get("directory");
+
+            JsonConfigCollection config = new JsonConfigCollection();
+            JsonFileParser parser = new JsonFileParser();
+            //TODO use environment pattern from settings
+            DirectoryScanner scanner = new DirectoryScanner(new File(directory), DEFAULT_ENVIRONMENT_PATTERN);
+            for (File environmentFile : scanner.getEnvironmentFiles()) {
+                JsonElement env;
+                try {
+                    env = parser.parseFile(environmentFile);
+                } catch (Exception ex) {
+                    String errorBody = "{}";
+                    return DefaultGoPluginApiResponse.error(errorBody);
+                }
+                config.addEnvironment(env);
             }
-            catch (Exception ex)
-            {
-                String errorBody = "{}";
-                return DefaultGoPluginApiResponse.error(errorBody);
+
+            Gson gson = new Gson();
+
+            return DefaultGoPluginApiResponse.success(gson.toJson(config.getJsonObject()));
+        }
+        catch (Exception e) {
+            LOGGER.warn("Error occurred while parsing configuration repository.", e);
+
+            responseCode = DefaultGoPluginApiResponse.INTERNAL_ERROR;
+            response.put("status", "failure");
+            if (!isEmpty(e.getMessage())) {
+                messages.add(e.getMessage());
             }
-            config.addEnvironment(env);
         }
 
-        Gson gson = new Gson();
-
-        return DefaultGoPluginApiResponse.success(gson.toJson(config.getJsonObject()));
+        if (!messages.isEmpty()) {
+            response.put("messages", messages);
+        }
+        return renderJSON(responseCode, response);
+    }
+    private boolean isEmpty(String str) {
+        return str == null || str.trim().isEmpty();
     }
 
     private GoPluginApiResponse createResponse(int responseCode, String body) {
