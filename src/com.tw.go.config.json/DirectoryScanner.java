@@ -6,11 +6,13 @@ import java.io.FilenameFilter;
 public class DirectoryScanner {
     private File directory;
     private String environmentPattern;
+    private String pipelinePattern;
 
-    public DirectoryScanner(File directory,String environmentPattern)
+    public DirectoryScanner(File directory,String environmentPattern,String pipelinePattern)
     {
         this.directory = directory;
         this.environmentPattern = environmentPattern;
+        this.pipelinePattern = pipelinePattern;
     }
 
     public File[] getEnvironmentFiles() {
@@ -18,6 +20,15 @@ public class DirectoryScanner {
             @Override
             public boolean accept(File dir, String name) {
                 return name.matches(environmentPattern);
+            }
+        });
+        return files;
+    }
+    public File[] getPipelineFiles() {
+        File[] files = directory.listFiles(new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String name) {
+                return name.matches(pipelinePattern);
             }
         });
         return files;
