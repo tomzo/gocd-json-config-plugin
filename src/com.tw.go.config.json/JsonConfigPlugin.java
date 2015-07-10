@@ -1,8 +1,6 @@
 package com.tw.go.config.json;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
+import com.google.gson.*;
 import com.thoughtworks.go.plugin.api.GoApplicationAccessor;
 import com.thoughtworks.go.plugin.api.GoPlugin;
 import com.thoughtworks.go.plugin.api.GoPluginIdentifier;
@@ -121,9 +119,7 @@ public class JsonConfigPlugin implements GoPlugin {
 
     private GoPluginApiResponse handleParseDirectoryRequest(GoPluginApiRequest request) {
         //ParseDirectoryMessage_1 requestArguments;
-        int responseCode;
-        Map<String, Object> response = new HashMap<String, Object>();
-        List<String> messages = new ArrayList<String>();
+        Gson gson = new Gson();
         try {
             Map<String, Object> dataMap = (Map<String, Object>) JSONUtils.fromJSON(request.requestBody());
             String directory = (String) dataMap.get("directory");
@@ -143,24 +139,22 @@ public class JsonConfigPlugin implements GoPlugin {
                 config.addEnvironment(env);
             }
 
-            Gson gson = new Gson();
+            JsonObject configJsonObject = config.getJsonObject();
+            JsonObject responseJsonObject = new JsonObject();
+            responseJsonObject.add("partialConfig",configJsonObject);
 
-            return DefaultGoPluginApiResponse.success(gson.toJson(config.getJsonObject()));
+            return DefaultGoPluginApiResponse.success(gson.toJson(responseJsonObject));
         }
         catch (Exception e) {
             LOGGER.warn("Error occurred while parsing configuration repository.", e);
-
-            responseCode = DefaultGoPluginApiResponse.INTERNAL_ERROR;
-            response.put("status", "failure");
-            if (!isEmpty(e.getMessage())) {
-                messages.add(e.getMessage());
-            }
+            JsonObject responseJsonObject = new JsonObject();
+            JsonArray errors = new JsonArray();
+            JsonObject exceptionAsJson = new JsonObject();
+            exceptionAsJson.addProperty("message",e.getMessage());
+            errors.add(exceptionAsJson);
+            responseJsonObject.add("pluginErrors", errors);
+            return DefaultGoPluginApiResponse.success(gson.toJson(responseJsonObject));
         }
-
-        if (!messages.isEmpty()) {
-            response.put("messages", messages);
-        }
-        return renderJSON(responseCode, response);
     }
     private boolean isEmpty(String str) {
         return str == null || str.trim().isEmpty();
