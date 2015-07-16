@@ -6,8 +6,7 @@ import com.google.gson.JsonObject;
 
 public class JsonConfigCollection {
 
-    private final JsonObject defaultGroup;
-    private final JsonArray defaultGroupPipelines;
+    private JsonObject defaultGroup;
     private JsonObject mainObject = new JsonObject();
     private JsonArray environments = new JsonArray();
     private JsonArray groups = new JsonArray();
@@ -16,10 +15,8 @@ public class JsonConfigCollection {
     {
         mainObject.add("environments",environments);
         mainObject.add("groups",groups);
-        defaultGroup = new JsonObject();
-        groups.add(defaultGroup);
-        defaultGroupPipelines = new JsonArray();
-        defaultGroup.add("pipelines",defaultGroupPipelines);
+
+
     }
 
     public void addEnvironment(JsonElement environment) {
@@ -29,12 +26,24 @@ public class JsonConfigCollection {
         groups.add(group);
     }
 
+    protected JsonArray getOrCreateDefaultGroupPipelines()
+    {
+        if(defaultGroup != null)
+            return defaultGroup.getAsJsonArray("pipelines");
+
+        defaultGroup = new JsonObject();
+        groups.add(defaultGroup);
+        JsonArray defaultGroupPipelines = new JsonArray();
+        defaultGroup.add("pipelines",defaultGroupPipelines);
+        return defaultGroupPipelines;
+    }
+
     public JsonObject getJsonObject()
     {
         return mainObject;
     }
 
     public void addPipeline(JsonElement pipeline) {
-        defaultGroupPipelines.add(pipeline);
+        getOrCreateDefaultGroupPipelines().add(pipeline);
     }
 }
