@@ -33,14 +33,8 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.thoughtworks.go</groupId>
+            <groupId>cd.go.plugin</groupId>
             <artifactId>go-plugin-api</artifactId>
-            <version>${go.version}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.thoughtworks.go</groupId>
-            <artifactId>go-plugin-config-repo</artifactId>
             <version>${go.version}</version>
             <scope>provided</scope>
         </dependency>

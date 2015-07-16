@@ -10,7 +10,6 @@ import com.thoughtworks.go.plugin.api.logging.Logger;
 import com.thoughtworks.go.plugin.api.request.GoPluginApiRequest;
 import com.thoughtworks.go.plugin.api.response.DefaultGoPluginApiResponse;
 import com.thoughtworks.go.plugin.api.response.GoPluginApiResponse;
-import com.thoughtworks.go.plugin.configrepo.messages.ParseDirectoryMessage_1;
 import org.apache.commons.io.IOUtils;
 
 import java.io.File;
