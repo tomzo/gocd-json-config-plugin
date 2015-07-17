@@ -52,4 +52,5 @@ public class JsonConfigCollection {
     public void addError(PluginError error) {
         errors.add(gson.toJsonTree(error));
     }
+
 }

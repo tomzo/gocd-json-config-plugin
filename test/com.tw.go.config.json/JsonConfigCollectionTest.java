@@ -1,11 +1,13 @@
 package com.tw.go.config.json;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import org.junit.Before;
 import org.junit.Test;
 
+import static junit.framework.TestCase.assertNull;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsCollectionContaining.hasItem;
 import static org.junit.Assert.assertThat;
@@ -61,6 +63,7 @@ public class JsonConfigCollectionTest {
         JsonObject jsonObject = jsonCollection.getJsonObject();
         assertThat(jsonObject.getAsJsonArray("pipelines").size(),is(2));
     }
+
 
     @Test
     public void shouldReturnEnvironmentsInJsonObject()
