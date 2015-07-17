@@ -1,3 +1,5 @@
+[![Build Status](https://snap-ci.com/tomzo/gocd-json-config-plugin/branch/master/build_image)](https://snap-ci.com/tomzo/gocd-json-config-plugin/branch/master)
+
 # Go JSON configuration plugin
 
 This plugin uses configuration repository extension in Go.
