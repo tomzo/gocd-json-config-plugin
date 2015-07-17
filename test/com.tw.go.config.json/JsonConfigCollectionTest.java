@@ -15,6 +15,7 @@ public class JsonConfigCollectionTest {
     private JsonObject pipe1;
     private JsonObject pipe2;
     private JsonObject devEnv;
+    private JsonObject pipeInGroup;
 
     @Before
     public void SetUp()
@@ -26,6 +27,10 @@ public class JsonConfigCollectionTest {
 
         pipe2 = new JsonObject();
         pipe2.addProperty("name","pipe2");
+
+        pipeInGroup = new JsonObject();
+        pipeInGroup.addProperty("name","pipe3");
+        pipeInGroup.addProperty("group","mygroup");
 
         devEnv = new JsonObject();
         devEnv.addProperty("name","dev");
@@ -67,6 +72,13 @@ public class JsonConfigCollectionTest {
         jsonCollection.addPipeline(pipe2);
         JsonObject jsonObject = jsonCollection.getJsonObject();
         assertThat(jsonObject.getAsJsonArray("groups").size(),is(1));
+    }
+    @Test
+    public void shouldAddPipelinesToNonDefaultGroupWhenGroupProperty()
+    {
+        jsonCollection.addPipeline(pipeInGroup);
+        JsonArray pipelines = jsonCollection.getOrCreateGroupPipelines("mygroup");
+        assertThat(pipelines.size(),is(1));
     }
     
     @Test
