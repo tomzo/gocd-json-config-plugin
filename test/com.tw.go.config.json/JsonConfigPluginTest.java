@@ -52,7 +52,7 @@ public class JsonConfigPluginTest {
         assertNotNull(environmentPatternConfig);
         JsonObject environmentPatternConfigAsJsonObject = environmentPatternConfig.getAsJsonObject();
         assertThat(environmentPatternConfigAsJsonObject.get("display-name").getAsString(), is("Go environment files pattern"));
-        assertThat(environmentPatternConfigAsJsonObject.get("default-value").getAsString(),is(".*goenvironment\\.json"));
+        assertThat(environmentPatternConfigAsJsonObject.get("default-value").getAsString(),is("**/*.goenvironment.json"));
         assertThat(environmentPatternConfigAsJsonObject.get("required").getAsBoolean(),is(false));
         assertThat(environmentPatternConfigAsJsonObject.get("secure").getAsBoolean(),is(false));
         assertThat(environmentPatternConfigAsJsonObject.get("display-order").getAsInt(),is(1));
@@ -69,7 +69,7 @@ public class JsonConfigPluginTest {
         assertNotNull(pipelinePatternConfig);
         JsonObject pipelinePatternConfigAsJsonObject = pipelinePatternConfig.getAsJsonObject();
         assertThat(pipelinePatternConfigAsJsonObject.get("display-name").getAsString(), is("Go pipeline files pattern"));
-        assertThat(pipelinePatternConfigAsJsonObject.get("default-value").getAsString(),is(".*gopipeline\\.json"));
+        assertThat(pipelinePatternConfigAsJsonObject.get("default-value").getAsString(),is("**/*.gopipeline.json"));
         assertThat(pipelinePatternConfigAsJsonObject.get("required").getAsBoolean(),is(false));
         assertThat(pipelinePatternConfigAsJsonObject.get("secure").getAsBoolean(),is(false));
         assertThat(pipelinePatternConfigAsJsonObject.get("display-order").getAsInt(),is(0));

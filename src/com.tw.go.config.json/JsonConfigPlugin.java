@@ -28,8 +28,8 @@ public class JsonConfigPlugin implements GoPlugin {
     public static final String PLUGIN_SETTINGS_GET_VIEW = "go.plugin-settings.get-view";
     public static final String PLUGIN_SETTINGS_VALIDATE_CONFIGURATION = "go.plugin-settings.validate-configuration";
     public static final String PLUGIN_SETTINGS_ENVIRONMENT_PATTERN = "environment_pattern";
-    private static final String DEFAULT_ENVIRONMENT_PATTERN = ".*goenvironment\\.json";
-    private static final String DEFAULT_PIPELINE_PATTERN = ".*gopipeline\\.json";
+    private static final String DEFAULT_ENVIRONMENT_PATTERN = "**/*.goenvironment.json";
+    private static final String DEFAULT_PIPELINE_PATTERN = "**/*.gopipeline.json";
 
     @Override
     public void initializeGoApplicationAccessor(GoApplicationAccessor goApplicationAccessor) {
@@ -128,16 +128,26 @@ public class JsonConfigPlugin implements GoPlugin {
         try {
             Map<String, Object> dataMap = (Map<String, Object>) JSONUtils.fromJSON(request.requestBody());
             String directory = (String) dataMap.get("directory");
+            File baseDir = new File(directory);
 
             JsonConfigCollection config = new JsonConfigCollection();
             JsonFileParser parser = new JsonFileParser();
             //TODO use pipeline pattern from settings
             //TODO use environment pattern from settings
-            DirectoryScanner scanner = new DirectoryScanner(new File(directory),
-                    DEFAULT_ENVIRONMENT_PATTERN,DEFAULT_PIPELINE_PATTERN);
+            ConfigDirectoryScanner scanner = new AntDirectoryScanner();
 
-            parseEnvironmentFiles(scanner, config, parser);
-            parsePipelineFiles(scanner, config, parser);
+            String environmentPattern = DEFAULT_ENVIRONMENT_PATTERN;
+            String pipelinePattern = DEFAULT_PIPELINE_PATTERN;
+
+            for (String environmentFile : scanner.getFilesMatchingPattern(baseDir, environmentPattern)) {
+                JsonElement env = parser.parseFile(new File(baseDir,environmentFile));
+                config.addEnvironment(env);
+            }
+
+            for (String pipelineFile : scanner.getFilesMatchingPattern(baseDir, pipelinePattern)) {
+                JsonElement pipe = parser.parseFile(new File(baseDir,pipelineFile));
+                config.addPipeline(pipe);
+            }
 
             JsonObject configJsonObject = config.getJsonObject();
             JsonObject responseJsonObject = new JsonObject();
@@ -157,7 +167,7 @@ public class JsonConfigPlugin implements GoPlugin {
         }
     }
 
-    private void parsePipelineFiles( DirectoryScanner scanner, JsonConfigCollection config, JsonFileParser parser) throws Exception {
+    private void parsePipelineFiles( RegexDirectoryScanner scanner, JsonConfigCollection config, JsonFileParser parser) throws Exception {
 
         for (File pipelineFile : scanner.getPipelineFiles()) {
             JsonElement env = parser.parseFile(pipelineFile);
@@ -165,14 +175,6 @@ public class JsonConfigPlugin implements GoPlugin {
         }
     }
 
-    private void parseEnvironmentFiles(DirectoryScanner scanner, JsonConfigCollection config, JsonFileParser parser) throws Exception {
-
-
-        for (File environmentFile : scanner.getEnvironmentFiles()) {
-            JsonElement env = parser.parseFile(environmentFile);
-            config.addEnvironment(env);
-        }
-    }
 
     private boolean isEmpty(String str) {
         return str == null || str.trim().isEmpty();
