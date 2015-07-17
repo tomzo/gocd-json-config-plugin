@@ -14,8 +14,11 @@ public class JsonConfigCollection {
     {
         mainObject.add("environments",environments);
         mainObject.add("groups",groups);
+    }
 
-
+    protected JsonArray getEnvironments()
+    {
+        return environments;
     }
 
     public void addEnvironment(JsonElement environment) {

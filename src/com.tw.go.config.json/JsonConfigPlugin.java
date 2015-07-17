@@ -34,8 +34,8 @@ public class JsonConfigPlugin implements GoPlugin {
     public static final String PLUGIN_SETTINGS_GET_VIEW = "go.plugin-settings.get-view";
     public static final String PLUGIN_SETTINGS_VALIDATE_CONFIGURATION = "go.plugin-settings.validate-configuration";
     public static final String PLUGIN_SETTINGS_ENVIRONMENT_PATTERN = "environment_pattern";
-    private static final String DEFAULT_ENVIRONMENT_PATTERN = "**/*.goenvironment.json";
-    private static final String DEFAULT_PIPELINE_PATTERN = "**/*.gopipeline.json";
+    public static final String DEFAULT_ENVIRONMENT_PATTERN = "**/*.goenvironment.json";
+    public static final String DEFAULT_PIPELINE_PATTERN = "**/*.gopipeline.json";
 
     private final Gson gson = new Gson();
     private GoApplicationAccessor goApplicationAccessor;
@@ -156,20 +156,20 @@ public class JsonConfigPlugin implements GoPlugin {
             return DefaultGoPluginApiResponse.success(gson.toJson(responseJsonObject));
         }
         catch (ConfigDirectoryParseException e) {
-            LOGGER.warn("Error occurred while parsing configuration repository.", e);
+            LOGGER.warn(String.format("%s errors occurred while parsing configuration repository.",e.getErrors().size(), e));
             JsonObject responseJsonObject = new JsonObject();
             responseJsonObject.add("pluginErrors", toJsonArray(e.getErrors()));
             return DefaultGoPluginApiResponse.success(gson.toJson(responseJsonObject));
         }
         catch (Exception e) {
-            LOGGER.warn("Error occurred while parsing configuration repository.", e);
+            LOGGER.error("Unexpected error occurred while parsing configuration repository.", e);
             JsonObject responseJsonObject = new JsonObject();
             JsonArray errors = new JsonArray();
             JsonObject exceptionAsJson = new JsonObject();
             exceptionAsJson.addProperty("message",e.getMessage());
             errors.add(exceptionAsJson);
             responseJsonObject.add("pluginErrors", errors);
-            return DefaultGoPluginApiResponse.success(gson.toJson(responseJsonObject));
+            return DefaultGoPluginApiResponse.error(gson.toJson(responseJsonObject));
         }
     }
 
@@ -204,15 +204,6 @@ public class JsonConfigPlugin implements GoPlugin {
         responseJsonObject.addProperty("message", message);
         return DefaultGoPluginApiResponse.badRequest(gson.toJson(responseJsonObject));
     }
-
-    private void parsePipelineFiles( RegexDirectoryScanner scanner, JsonConfigCollection config, JsonFileParser parser) throws Exception {
-
-        for (File pipelineFile : scanner.getPipelineFiles()) {
-            JsonElement env = parser.parseFile(pipelineFile);
-            config.addPipeline(env);
-        }
-    }
-
 
     private boolean isEmpty(String str) {
         return str == null || str.trim().isEmpty();

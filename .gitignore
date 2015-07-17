@@ -1,5 +1,7 @@
 # Created by https://www.gitignore.io
 
+json-plugin-test-dir/
+
 ### Java ###
 *.class
 

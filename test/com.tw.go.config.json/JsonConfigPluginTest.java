@@ -4,28 +4,40 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.thoughtworks.go.plugin.api.GoApplicationAccessor;
 import com.thoughtworks.go.plugin.api.exceptions.UnhandledRequestTypeException;
 import com.thoughtworks.go.plugin.api.request.DefaultGoPluginApiRequest;
+import com.thoughtworks.go.plugin.api.request.GoApiRequest;
 import com.thoughtworks.go.plugin.api.request.GoPluginApiRequest;
+import com.thoughtworks.go.plugin.api.response.DefaultGoApiResponse;
 import com.thoughtworks.go.plugin.api.response.DefaultGoPluginApiResponse;
+import com.thoughtworks.go.plugin.api.response.GoApiResponse;
 import com.thoughtworks.go.plugin.api.response.GoPluginApiResponse;
 import org.junit.Before;
 import org.junit.Test;
 
+import static junit.framework.TestCase.assertNull;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.*;
 
 public class JsonConfigPluginTest {
 
     private JsonConfigPlugin plugin;
     private Gson gson;
     private JsonParser parser;
+    private GoApplicationAccessor goAccessor;
 
     @Before
     public void SetUp()
     {
         plugin = new JsonConfigPlugin();
+        goAccessor = mock(GoApplicationAccessor.class);
+        plugin.initializeGoApplicationAccessor(goAccessor);
+        GoApiResponse settingsResponse = DefaultGoApiResponse.success("{}");
+        when(goAccessor.submit(any(GoApiRequest.class))).thenReturn(settingsResponse);
         gson = new Gson();
         parser = new JsonParser();
     }
@@ -103,13 +115,15 @@ public class JsonConfigPluginTest {
     {
         DefaultGoPluginApiRequest parseDirectoryRequest = new DefaultGoPluginApiRequest("configrepo","1.0","parse-directory");
         String requestBody = "{\n" +
-                "    \"directory\":\"pipelines/flyweight/e4ee3e68-8a3e-4435-85ab-47e94-efbf5a\",\n" +
+                "    \"directory\":\".\",\n" +
                 "    \"configurations\":[]\n" +
                 "}";
         parseDirectoryRequest.setRequestBody(requestBody);
 
         GoPluginApiResponse response = plugin.handle(parseDirectoryRequest);
         assertThat(response.responseCode(), is(DefaultGoPluginApiResponse.SUCCESS_RESPONSE_CODE));
+        JsonObject responseJsonObject = getJsonObjectFromResponse(response);
+        assertNull(responseJsonObject.get("pluginErrors"));
     }
 
     @Test
@@ -153,5 +167,40 @@ public class JsonConfigPluginTest {
 
         GoPluginApiResponse response = plugin.handle(parseDirectoryRequest);
         assertThat(response.responseCode(), is(DefaultGoPluginApiResponse.BAD_REQUEST));
+    }
+
+    @Test
+    public void shouldTalkToGoApplicationAccessorToGetPluginSettings() throws UnhandledRequestTypeException
+    {
+        DefaultGoPluginApiRequest parseDirectoryRequest = new DefaultGoPluginApiRequest("configrepo","1.0","parse-directory");
+        String requestBody = "{\n" +
+                "    \"directory\":\"pipelines/flyweight/e4ee3e68-8a3e-4435-85ab-47e94-efbf5a\",\n" +
+                "    \"configurations\":[]\n" +
+                "}";
+        parseDirectoryRequest.setRequestBody(requestBody);
+
+        GoPluginApiResponse response = plugin.handle(parseDirectoryRequest);
+
+        verify(goAccessor,times(1)).submit(any(GoApiRequest.class));
+        assertThat(response.responseCode(), is(DefaultGoPluginApiResponse.SUCCESS_RESPONSE_CODE));
+    }
+
+    @Test
+    public void shouldRespondSuccessToParseDirectoryRequestWhenPluginHasConfiguration() throws UnhandledRequestTypeException
+    {
+        GoApiResponse settingsResponse = DefaultGoApiResponse.success("{}");
+        when(goAccessor.submit(any(GoApiRequest.class))).thenReturn(settingsResponse);
+
+        DefaultGoPluginApiRequest parseDirectoryRequest = new DefaultGoPluginApiRequest("configrepo","1.0","parse-directory");
+        String requestBody = "{\n" +
+                "    \"directory\":\".\",\n" +
+                "    \"configurations\":[]\n" +
+                "}";
+        parseDirectoryRequest.setRequestBody(requestBody);
+
+        GoPluginApiResponse response = plugin.handle(parseDirectoryRequest);
+
+        verify(goAccessor,times(1)).submit(any(GoApiRequest.class));
+        assertThat(response.responseCode(), is(DefaultGoPluginApiResponse.SUCCESS_RESPONSE_CODE));
     }
 }
