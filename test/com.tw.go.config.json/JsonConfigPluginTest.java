@@ -79,4 +79,79 @@ public class JsonConfigPluginTest {
         String responseBody = response.responseBody();
         return parser.parse(responseBody).getAsJsonObject();
     }
+
+    @Test
+    public void shouldRespondSuccessToGetViewRequest() throws UnhandledRequestTypeException
+    {
+        DefaultGoPluginApiRequest getConfigRequest = new DefaultGoPluginApiRequest("configrepo","1.0","go.plugin-settings.get-view");
+
+        GoPluginApiResponse response = plugin.handle(getConfigRequest);
+        assertThat(response.responseCode(), is(DefaultGoPluginApiResponse.SUCCESS_RESPONSE_CODE));
+    }
+
+    @Test
+    public void shouldRespondSuccessToValidateConfigRequest() throws UnhandledRequestTypeException
+    {
+        DefaultGoPluginApiRequest validateRequest = new DefaultGoPluginApiRequest("configrepo","1.0","go.plugin-settings.validate-configuration");
+
+        GoPluginApiResponse response = plugin.handle(validateRequest);
+        assertThat(response.responseCode(), is(DefaultGoPluginApiResponse.SUCCESS_RESPONSE_CODE));
+    }
+
+    @Test
+    public void shouldRespondSuccessToParseDirectoryRequestWhenEmpty() throws UnhandledRequestTypeException
+    {
+        DefaultGoPluginApiRequest parseDirectoryRequest = new DefaultGoPluginApiRequest("configrepo","1.0","parse-directory");
+        String requestBody = "{\n" +
+                "    \"directory\":\"pipelines/flyweight/e4ee3e68-8a3e-4435-85ab-47e94-efbf5a\",\n" +
+                "    \"configurations\":[]\n" +
+                "}";
+        parseDirectoryRequest.setRequestBody(requestBody);
+
+        GoPluginApiResponse response = plugin.handle(parseDirectoryRequest);
+        assertThat(response.responseCode(), is(DefaultGoPluginApiResponse.SUCCESS_RESPONSE_CODE));
+    }
+
+    @Test
+    public void shouldRespondBadRequestToParseDirectoryRequestWhenDirectoryIsNotSpecified() throws UnhandledRequestTypeException
+    {
+        DefaultGoPluginApiRequest parseDirectoryRequest = new DefaultGoPluginApiRequest("configrepo","1.0","parse-directory");
+        String requestBody = "{\n" +
+                "    \"configurations\":[]\n" +
+                "}";
+        parseDirectoryRequest.setRequestBody(requestBody);
+
+        GoPluginApiResponse response = plugin.handle(parseDirectoryRequest);
+        assertThat(response.responseCode(), is(DefaultGoPluginApiResponse.BAD_REQUEST));
+    }
+    @Test
+    public void shouldRespondBadRequestToParseDirectoryRequestWhenRequestBodyIsNull() throws UnhandledRequestTypeException
+    {
+        DefaultGoPluginApiRequest parseDirectoryRequest = new DefaultGoPluginApiRequest("configrepo","1.0","parse-directory");
+        String requestBody = null;
+        parseDirectoryRequest.setRequestBody(requestBody);
+
+        GoPluginApiResponse response = plugin.handle(parseDirectoryRequest);
+        assertThat(response.responseCode(), is(DefaultGoPluginApiResponse.BAD_REQUEST));
+    }
+    @Test
+    public void shouldRespondBadRequestToParseDirectoryRequestWhenRequestBodyIsEmpty() throws UnhandledRequestTypeException
+    {
+        DefaultGoPluginApiRequest parseDirectoryRequest = new DefaultGoPluginApiRequest("configrepo","1.0","parse-directory");
+        String requestBody = null;
+        parseDirectoryRequest.setRequestBody("{}");
+
+        GoPluginApiResponse response = plugin.handle(parseDirectoryRequest);
+        assertThat(response.responseCode(), is(DefaultGoPluginApiResponse.BAD_REQUEST));
+    }
+    @Test
+    public void shouldRespondBadRequestToParseDirectoryRequestWhenRequestBodyIsNotJson() throws UnhandledRequestTypeException
+    {
+        DefaultGoPluginApiRequest parseDirectoryRequest = new DefaultGoPluginApiRequest("configrepo","1.0","parse-directory");
+        String requestBody = null;
+        parseDirectoryRequest.setRequestBody("{bla");
+
+        GoPluginApiResponse response = plugin.handle(parseDirectoryRequest);
+        assertThat(response.responseCode(), is(DefaultGoPluginApiResponse.BAD_REQUEST));
+    }
 }

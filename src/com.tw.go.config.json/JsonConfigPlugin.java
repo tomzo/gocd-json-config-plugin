@@ -22,6 +22,8 @@ public class JsonConfigPlugin implements GoPlugin {
     private static final String DISPLAY_NAME_ENVIRONMENT_PATTERN = "Go environment files pattern";
     private static final String DISPLAY_NAME_PIPELINE_PATTERN = "Go pipeline files pattern";
     private static final String PLUGIN_SETTINGS_PIPELINE_PATTERN = "pipeline_pattern";
+    private static final String MISSING_DIRECTORY_MESSAGE = "directory property is missing in parse-directory request";
+    private static final String EMPTY_REQUEST_BODY_MESSAGE = "Request body cannot be null or empty";
     private static Logger LOGGER = Logger.getLoggerFor(JsonConfigPlugin.class);
 
     public static final String PLUGIN_SETTINGS_GET_CONFIGURATION = "go.plugin-settings.get-configuration";
@@ -30,6 +32,8 @@ public class JsonConfigPlugin implements GoPlugin {
     public static final String PLUGIN_SETTINGS_ENVIRONMENT_PATTERN = "environment_pattern";
     private static final String DEFAULT_ENVIRONMENT_PATTERN = "**/*.goenvironment.json";
     private static final String DEFAULT_PIPELINE_PATTERN = "**/*.gopipeline.json";
+
+    private final Gson gson = new Gson();
 
     @Override
     public void initializeGoApplicationAccessor(GoApplicationAccessor goApplicationAccessor) {
@@ -61,30 +65,8 @@ public class JsonConfigPlugin implements GoPlugin {
         return renderJSON(DefaultGoPluginApiResponse.SUCCESS_RESPONSE_CODE, response);
     }
     private GoPluginApiResponse handleValidatePluginSettingsConfiguration(GoPluginApiRequest goPluginApiRequest) {
-        Map<String, Object> responseMap = (Map<String, Object>) JSONUtils.fromJSON(goPluginApiRequest.requestBody());
-        final Map<String, String> configuration = keyValuePairs(responseMap, "plugin-settings");
         List<Map<String, Object>> response = new ArrayList<Map<String, Object>>();
-
-        //TODO actual validation
-        validate(response);
-
         return renderJSON(DefaultGoPluginApiResponse.SUCCESS_RESPONSE_CODE, response);
-    }
-    private void validate(List<Map<String, Object>> response) {
-        Map<String, Object> fieldValidation = new HashMap<String, Object>();
-        if (!fieldValidation.isEmpty()) {
-            response.add(fieldValidation);
-        }
-    }
-    private Map<String, String> keyValuePairs(Map<String, Object> map, String mainKey) {
-        Map<String, String> keyValuePairs = new HashMap<String, String>();
-        Map<String, Object> fieldsMap = (Map<String, Object>) map.get(mainKey);
-        for (String field : fieldsMap.keySet()) {
-            Map<String, Object> fieldProperties = (Map<String, Object>) fieldsMap.get(field);
-            String value = (String) fieldProperties.get("value");
-            keyValuePairs.put(field, value);
-        }
-        return keyValuePairs;
     }
 
     private GoPluginApiResponse handleGetPluginSettingsConfiguration() {
@@ -124,10 +106,30 @@ public class JsonConfigPlugin implements GoPlugin {
 
     private GoPluginApiResponse handleParseDirectoryRequest(GoPluginApiRequest request) {
         //ParseDirectoryMessage_1 requestArguments;
-        Gson gson = new Gson();
+
+        JsonParser jsonParser = new JsonParser();
         try {
-            Map<String, Object> dataMap = (Map<String, Object>) JSONUtils.fromJSON(request.requestBody());
-            String directory = (String) dataMap.get("directory");
+            String requestBody = request.requestBody();
+            if(requestBody == null) {
+                return badRequest(EMPTY_REQUEST_BODY_MESSAGE);
+            }
+            JsonElement parsedResponse;
+            try {
+                parsedResponse = jsonParser.parse(requestBody);
+            }
+            catch (JsonParseException parseException)
+            {
+                return badRequest("Request body must be valid JSON string");
+            }
+            if(parsedResponse.equals(new JsonObject())) {
+                return badRequest(EMPTY_REQUEST_BODY_MESSAGE);
+            }
+            JsonObject parsedResponseObject = parsedResponse.getAsJsonObject();
+            JsonPrimitive directoryJsonPrimitive = parsedResponseObject.getAsJsonPrimitive("directory");
+            if(directoryJsonPrimitive == null) {
+                return badRequest(MISSING_DIRECTORY_MESSAGE);
+            }
+            String directory = directoryJsonPrimitive.getAsString();
             File baseDir = new File(directory);
 
             JsonConfigCollection config = new JsonConfigCollection();
@@ -165,6 +167,12 @@ public class JsonConfigPlugin implements GoPlugin {
             responseJsonObject.add("pluginErrors", errors);
             return DefaultGoPluginApiResponse.success(gson.toJson(responseJsonObject));
         }
+    }
+
+    private GoPluginApiResponse badRequest(String message) {
+        JsonObject responseJsonObject = new JsonObject();
+        responseJsonObject.addProperty("message", message);
+        return DefaultGoPluginApiResponse.badRequest(gson.toJson(responseJsonObject));
     }
 
     private void parsePipelineFiles( RegexDirectoryScanner scanner, JsonConfigCollection config, JsonFileParser parser) throws Exception {
