@@ -13,8 +13,12 @@ import com.thoughtworks.go.plugin.api.response.DefaultGoApiResponse;
 import com.thoughtworks.go.plugin.api.response.DefaultGoPluginApiResponse;
 import com.thoughtworks.go.plugin.api.response.GoApiResponse;
 import com.thoughtworks.go.plugin.api.response.GoPluginApiResponse;
+import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.io.File;
+import java.io.IOException;
 
 import static junit.framework.TestCase.assertNull;
 import static org.hamcrest.core.Is.is;
@@ -31,8 +35,7 @@ public class JsonConfigPluginTest {
     private GoApplicationAccessor goAccessor;
 
     @Before
-    public void SetUp()
-    {
+    public void SetUp() throws IOException {
         plugin = new JsonConfigPlugin();
         goAccessor = mock(GoApplicationAccessor.class);
         plugin.initializeGoApplicationAccessor(goAccessor);
@@ -40,6 +43,10 @@ public class JsonConfigPluginTest {
         when(goAccessor.submit(any(GoApiRequest.class))).thenReturn(settingsResponse);
         gson = new Gson();
         parser = new JsonParser();
+
+        File emptyDir = new File("emptyDir");
+        FileUtils.deleteDirectory(emptyDir);
+        FileUtils.forceMkdir(emptyDir);
     }
 
 
@@ -115,7 +122,7 @@ public class JsonConfigPluginTest {
     {
         DefaultGoPluginApiRequest parseDirectoryRequest = new DefaultGoPluginApiRequest("configrepo","1.0","parse-directory");
         String requestBody = "{\n" +
-                "    \"directory\":\".\",\n" +
+                "    \"directory\":\"emptyDir\",\n" +
                 "    \"configurations\":[]\n" +
                 "}";
         parseDirectoryRequest.setRequestBody(requestBody);
@@ -174,7 +181,7 @@ public class JsonConfigPluginTest {
     {
         DefaultGoPluginApiRequest parseDirectoryRequest = new DefaultGoPluginApiRequest("configrepo","1.0","parse-directory");
         String requestBody = "{\n" +
-                "    \"directory\":\"pipelines/flyweight/e4ee3e68-8a3e-4435-85ab-47e94-efbf5a\",\n" +
+                "    \"directory\":\"emptyDir\",\n" +
                 "    \"configurations\":[]\n" +
                 "}";
         parseDirectoryRequest.setRequestBody(requestBody);
@@ -193,7 +200,7 @@ public class JsonConfigPluginTest {
 
         DefaultGoPluginApiRequest parseDirectoryRequest = new DefaultGoPluginApiRequest("configrepo","1.0","parse-directory");
         String requestBody = "{\n" +
-                "    \"directory\":\".\",\n" +
+                "    \"directory\":\"emptyDir\",\n" +
                 "    \"configurations\":[]\n" +
                 "}";
         parseDirectoryRequest.setRequestBody(requestBody);
