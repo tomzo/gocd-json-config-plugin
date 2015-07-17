@@ -19,14 +19,17 @@ import java.util.*;
 @Extension
 public class JsonConfigPlugin implements GoPlugin {
 
+    private static final String DISPLAY_NAME_ENVIRONMENT_PATTERN = "Go environment files pattern";
+    private static final String DISPLAY_NAME_PIPELINE_PATTERN = "Go pipeline files pattern";
+    private static final String PLUGIN_SETTINGS_PIPELINE_PATTERN = "pipeline_pattern";
     private static Logger LOGGER = Logger.getLoggerFor(JsonConfigPlugin.class);
 
     public static final String PLUGIN_SETTINGS_GET_CONFIGURATION = "go.plugin-settings.get-configuration";
     public static final String PLUGIN_SETTINGS_GET_VIEW = "go.plugin-settings.get-view";
     public static final String PLUGIN_SETTINGS_VALIDATE_CONFIGURATION = "go.plugin-settings.validate-configuration";
     public static final String PLUGIN_SETTINGS_ENVIRONMENT_PATTERN = "environment_pattern";
-    private static final String DEFAULT_ENVIRONMENT_PATTERN = ".*goenvironment.json";
-    private static final String DEFAULT_PIPELINE_PATTERN = ".*gopipeline.json";
+    private static final String DEFAULT_ENVIRONMENT_PATTERN = ".*goenvironment\\.json";
+    private static final String DEFAULT_PIPELINE_PATTERN = ".*gopipeline\\.json";
 
     @Override
     public void initializeGoApplicationAccessor(GoApplicationAccessor goApplicationAccessor) {
@@ -86,7 +89,8 @@ public class JsonConfigPlugin implements GoPlugin {
 
     private GoPluginApiResponse handleGetPluginSettingsConfiguration() {
         Map<String, Object> response = new HashMap<String, Object>();
-        response.put(PLUGIN_SETTINGS_ENVIRONMENT_PATTERN, createField("Environment pattern", DEFAULT_ENVIRONMENT_PATTERN, false, false, "0"));
+        response.put(PLUGIN_SETTINGS_PIPELINE_PATTERN, createField(DISPLAY_NAME_PIPELINE_PATTERN, DEFAULT_PIPELINE_PATTERN, false, false, "0"));
+        response.put(PLUGIN_SETTINGS_ENVIRONMENT_PATTERN, createField(DISPLAY_NAME_ENVIRONMENT_PATTERN, DEFAULT_ENVIRONMENT_PATTERN, false, false, "1"));
         return renderJSON(DefaultGoPluginApiResponse.SUCCESS_RESPONSE_CODE, response);
     }
     private Map<String, Object> createField(String displayName, String defaultValue, boolean isRequired, boolean isSecure, String displayOrder) {
