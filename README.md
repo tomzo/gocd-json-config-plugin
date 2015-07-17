@@ -22,25 +22,27 @@ Go pipeline and environment configuration has very deep structure. So instead
 of writing very long schema below are examples of many configuration elements.
 It is very close to [official xml schema](http://www.go.cd/documentation/user/15.2.0/configuration/configuration_reference.html)
 
-1. [Pipeline](#Pipeline)
-1. [Stage](#Stage)
-1. [Job](#Job)
-1. [Tasks](#Tasks)
- * [rake](#Rake task)
- * [ant](#Ant task)
- * [nant](#Nant task)
- * [exec](#Exec task)
- * [pluggabletask](#Pluggable task)
-1. [Materials](#Materials)
- * [pipeline](#Pipeline material)
- * [package](#Package material)
- * [git](#Git material)
- * [svn](#Svn material)
- * [perforce](#Perforce material)
- * [tfs](#Tfs material)
- * [hg](#Hg material)
- * [pluggablescm](#Pluggable scm material)
-1. [Environment](#Environment)
+1. [Pipeline](#pipeline)
+ * [Mingle](#mingle)
+ * [Tracking tool](#tracking tool)
+1. [Stage](#stage)
+1. [Job](#job)
+1. [Tasks](#tasks)
+ * [rake](#rake task)
+ * [ant](#ant task)
+ * [nant](#nant task)
+ * [exec](#exec task)
+ * [pluggabletask](#pluggable task)
+1. [Materials](#materials)
+ * [pipeline](#pipeline material)
+ * [package](#package material)
+ * [git](#git material)
+ * [svn](#svn material)
+ * [perforce](#perforce material)
+ * [tfs](#tfs material)
+ * [hg](#hg material)
+ * [pluggablescm](#pluggable scm material)
+1. [Environment](#environment)
 
 
 ### Pipeline
@@ -160,7 +162,7 @@ Example 'pipe1':
 }
 ```
 
-#### TrackingTool
+#### Tracking tool
 
 Example 'tracking':
 ```json
