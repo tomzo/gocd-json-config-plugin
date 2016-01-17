@@ -2,27 +2,76 @@
 
 # Go JSON configuration plugin
 
+This is a Go server plugin which allows to keep pipelines and environments configuration
+in version control systems supported by Go (git,svn,mercurial, etc.)
+
+You can find an example repository at https://github.com/tomzo/gocd-json-config-example.git
+
+## Quickstart
+
+### Early access
+
 This plugin uses configuration repository extension in Go.
 [Feature](https://github.com/gocd/gocd/issues/1133) is not
-merged into official gocd repository. But it will be soon possible
-to build Go from [my fork](https://github.com/tomzo/gocd) to try this out.
+merged into official gocd repository. Currently you have to
+build Go from [my fork](https://github.com/tomzo/gocd) to try this out.
+
+### Installation
+
+First you must install the plugin in Go server.
+You'll have to drop `.jar` to `/plugins` directory in your server installation.
+Plugin jars can be downloaded from [snap](https://snap-ci.com/tomzo/gocd-json-config-plugin/branch/master)
+
+### Add configuration repository
+
+There is no UI to add configuration repositories so you'll have to edit the
+config XML.
+You will need to add `config-repo` section within `config-repos`.
+If `config-repos` does not exist yet then you add it right above first `<pipelines />`.
+
+To add all configurations from git repository `https://github.com/tomzo/gocd-json-config-example.git`
+a section like this should be added:
+
+```xml
+...
+<config-repos>
+   <config-repo plugin="json.config.plugin">
+     <git url="https://github.com/tomzo/gocd-json-config-example.git" />
+   </config-repo>
+</config-repos>
+...
+```
 
 ## Configuration files
 
-This plugin let's you define 2 types of configuration files:
- * pipeline - single file defines a single pipeline
- * environment - single file defines Go environment
+Using this plugin you can store any number of pipeline or environment
+configurations without a versioned repository like git.
+
+By default pipelines should be stored in `*.gopipeline.json` files
+and environments should be stored in `*.goenvironment.json` files.
+
+The file name pattern can be changed on plugin configuration page.
 
 ## Format
 
+The pipeline configuration files should be stored in format similar to
+one exposed by [go API](https://api.go.cd/16.1.0/#get-pipeline-config).
+
+The format of environment configuration files is much simpler,
+you can find examples of correct environments at the [bottom](#environment).
+
+#### Implementation note
+
 This plugin leverages JSON message format used internally for Go server
 and plugin communication. The only difference between these schemas is the
-fact that in plugin format a pipeline can contain a `group` property. Plugin
+fact that in plugins format a pipeline can contain a `group` property. Plugin
 transforms that into official schema where groups contain many pipelines.
 
 Go pipeline and environment configuration has very deep structure. So instead
-of writing very long schema below are examples of many configuration elements.
-It is very close to [official xml schema](http://www.go.cd/documentation/user/15.2.0/configuration/configuration_reference.html)
+of reading a very long schema, below you can find examples of all configuration elements.
+
+It is very close to [official xml schema](http://www.go.cd/documentation/user/16.1.0/configuration/configuration_reference.html)
+and also [official JSONs in pipeline configuration API](https://api.go.cd/16.1.0/#get-pipeline-config)
 
 1. [Pipeline](#pipeline)
  * [Mingle](#mingle)
