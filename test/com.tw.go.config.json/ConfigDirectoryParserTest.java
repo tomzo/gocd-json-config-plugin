@@ -71,7 +71,7 @@ public class ConfigDirectoryParserTest {
     {
         createFileWithContent("pipe1.gopipeline.json", this.pipe1String);
         JsonConfigCollection result = parser.parseDirectory(directory);
-        assertThat(result.getOrCreateDefaultGroupPipelines().size(), is(1));
+        assertThat(result.getPipelines().size(), is(1));
     }
     @Test
     public void shouldThrowErrorsWithLocationWhenInvalidContent() throws Exception

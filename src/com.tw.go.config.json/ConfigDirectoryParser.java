@@ -43,7 +43,7 @@ public class ConfigDirectoryParser {
                     errors.add(error);
                 }
                 else
-                    config.addEnvironment(env);
+                    config.addEnvironment(env,environmentFile);
             }
             catch (JsonParseException parseException)
             {
@@ -72,7 +72,7 @@ public class ConfigDirectoryParser {
                     errors.add(error);
                 }
                 else
-                    config.addPipeline(pipe);
+                    config.addPipeline(pipe,pipelineFile);
             }
             catch (JsonParseException parseException)
             {

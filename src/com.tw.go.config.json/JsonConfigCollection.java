@@ -6,14 +6,19 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 
 public class JsonConfigCollection {
+    private static final int TARGET_VERSION = 1;
+
     private JsonObject mainObject = new JsonObject();
     private JsonArray environments = new JsonArray();
-    private JsonArray groups = new JsonArray();
+    private JsonArray pipelines = new JsonArray();
+    private JsonArray errors = new JsonArray();
 
     public JsonConfigCollection()
     {
+        mainObject.add("target_version",new JsonPrimitive(TARGET_VERSION));
         mainObject.add("environments",environments);
-        mainObject.add("groups",groups);
+        mainObject.add("pipelines",pipelines);
+        mainObject.add("errors",errors);
     }
 
     protected JsonArray getEnvironments()
@@ -21,20 +26,9 @@ public class JsonConfigCollection {
         return environments;
     }
 
-    public void addEnvironment(JsonElement environment) {
+    public void addEnvironment(JsonElement environment,String location) {
         environments.add(environment);
-    }
-    public void addGroup(JsonElement group) {
-        groups.add(group);
-    }
-
-    protected JsonArray getOrCreateDefaultGroupPipelines()
-    {
-        return getOrCreateGroupPipelines("");
-    }
-
-    protected JsonArray getOrCreateGroupPipelines(String groupName) {
-        return getOrCreateGroup(groupName).getAsJsonArray("pipelines");
+        environment.getAsJsonObject().add("location",new JsonPrimitive(location));
     }
 
     public JsonObject getJsonObject()
@@ -42,49 +36,12 @@ public class JsonConfigCollection {
         return mainObject;
     }
 
-    public void addPipeline(JsonElement pipeline) {
-        JsonObject pipelineObject = pipeline.getAsJsonObject();
-        JsonPrimitive groupMember = pipelineObject.getAsJsonPrimitive("group");
-        if(groupMember == null)
-            getOrCreateDefaultGroupPipelines().add(pipeline);
-        else
-        {
-            String groupName = groupMember.getAsString();
-            getOrCreateGroupPipelines(groupName).add(pipeline);
-        }
+    public void addPipeline(JsonElement pipeline,String location) {
+        pipelines.add(pipeline);
+        pipeline.getAsJsonObject().add("location",new JsonPrimitive(location));
     }
 
-    protected JsonObject getOrCreateGroup(String group) {
-
-        JsonObject groupObject = tryFindGroup(group);
-        if(groupObject == null)
-        {
-            groupObject = createGroup(group);
-        }
-
-        return groupObject;
-    }
-
-    private JsonObject createGroup(String group) {
-        JsonObject groupObject;
-        groupObject = new JsonObject();
-        groupObject.addProperty("name",group);
-        JsonArray pipelines = new JsonArray();
-        groupObject.add("pipelines",pipelines);
-        groups.add(groupObject);
-        return groupObject;
-    }
-
-    private JsonObject tryFindGroup(String group) {
-        JsonObject groupObject = null;
-        for(JsonElement e : groups)
-        {
-            JsonObject asJsonObject = e.getAsJsonObject();
-            if(asJsonObject.getAsJsonPrimitive("name").getAsString().equals(group))
-            {
-                groupObject = asJsonObject;
-            }
-        }
-        return groupObject;
+    public JsonArray getPipelines() {
+        return pipelines;
     }
 }

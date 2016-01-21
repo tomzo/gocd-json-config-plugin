@@ -1,9 +1,6 @@
 package com.tw.go.config.json;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.google.gson.*;
 import com.thoughtworks.go.plugin.api.GoApplicationAccessor;
 import com.thoughtworks.go.plugin.api.exceptions.UnhandledRequestTypeException;
 import com.thoughtworks.go.plugin.api.request.DefaultGoPluginApiRequest;
@@ -19,7 +16,9 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.StringReader;
 
+import static junit.framework.Assert.assertTrue;
 import static junit.framework.TestCase.assertNull;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertNotNull;
@@ -209,5 +208,31 @@ public class JsonConfigPluginTest {
 
         verify(goAccessor,times(1)).submit(any(GoApiRequest.class));
         assertThat(response.responseCode(), is(DefaultGoPluginApiResponse.SUCCESS_RESPONSE_CODE));
+    }
+
+    @Test
+    public void shouldContainValidFieldsInResponseMessage() throws UnhandledRequestTypeException
+    {
+        GoApiResponse settingsResponse = DefaultGoApiResponse.success("{}");
+        when(goAccessor.submit(any(GoApiRequest.class))).thenReturn(settingsResponse);
+
+        DefaultGoPluginApiRequest parseDirectoryRequest = new DefaultGoPluginApiRequest("configrepo","1.0","parse-directory");
+        String requestBody = "{\n" +
+                "    \"directory\":\"emptyDir\",\n" +
+                "    \"configurations\":[]\n" +
+                "}";
+        parseDirectoryRequest.setRequestBody(requestBody);
+
+        GoPluginApiResponse response = plugin.handle(parseDirectoryRequest);
+
+        assertThat(response.responseCode(), is(DefaultGoPluginApiResponse.SUCCESS_RESPONSE_CODE));
+        final JsonParser parser = new JsonParser();
+        JsonElement responseObj = parser.parse(response.responseBody());
+        assertTrue(responseObj.isJsonObject());
+        JsonObject obj = responseObj.getAsJsonObject();
+        assertTrue(obj.has("errors"));
+        assertTrue(obj.has("pipelines"));
+        assertTrue(obj.has("environments"));
+        assertTrue(obj.has("target_version"));
     }
 }

@@ -2,6 +2,7 @@ package com.tw.go.config.json;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -37,6 +38,14 @@ public class JsonConfigCollectionTest {
     }
 
     @Test
+    public void shouldReturnTargetVersion()
+    {
+        JsonObject jsonObject = jsonCollection.getJsonObject();
+        assertThat(jsonObject.get("target_version") instanceof JsonPrimitive,is(true));
+        assertThat(jsonObject.getAsJsonPrimitive("target_version").getAsInt(), is(1));
+    }
+
+    @Test
     public void shouldReturnEnvironmentsArrayInJsonObjectWhenEmpty()
     {
         JsonObject jsonObject = jsonCollection.getJsonObject();
@@ -45,59 +54,18 @@ public class JsonConfigCollectionTest {
     }
 
     @Test
-    public void shouldReturnGroupsArrayInJsonObjectWhenEmpty()
+    public void shouldAppendPipelinesToPipelinesCollection()
     {
+        jsonCollection.addPipeline(pipe1,"pipe1.json");
+        jsonCollection.addPipeline(pipe2,"pipe2.json");
         JsonObject jsonObject = jsonCollection.getJsonObject();
-        assertThat(jsonObject.get("groups") instanceof JsonArray,is(true));
-        assertThat(jsonObject.getAsJsonArray("groups"), is(new JsonArray()));
-    }
-
-    @Test
-    public void shouldAddPipelinesToDefaultGroup()
-    {
-        jsonCollection.addPipeline(pipe1);
-        assertThat(jsonCollection.getOrCreateDefaultGroupPipelines().size(), is(1));
-    }
-    @Test
-    public void shouldAppendDefaultGroupToGroupsInJsonObject()
-    {
-        jsonCollection.addPipeline(pipe1);
-        JsonObject jsonObject = jsonCollection.getJsonObject();
-        assertThat(jsonObject.getAsJsonArray("groups").size(),is(1));
-    }
-    @Test
-    public void shouldAppendOnlyOnceDefaultGroupToGroupsInJsonObjectWhen2PipelinesAdded()
-    {
-        jsonCollection.addPipeline(pipe1);
-        jsonCollection.addPipeline(pipe2);
-        JsonObject jsonObject = jsonCollection.getJsonObject();
-        assertThat(jsonObject.getAsJsonArray("groups").size(),is(1));
-    }
-    @Test
-    public void shouldAddPipelinesToNonDefaultGroupWhenGroupProperty()
-    {
-        jsonCollection.addPipeline(pipeInGroup);
-        JsonArray pipelines = jsonCollection.getOrCreateGroupPipelines("mygroup");
-        assertThat(pipelines.size(),is(1));
-    }
-    
-    @Test
-    public void shouldReturnPipelinesInDefaultGroupInJsonObject()
-    {
-        jsonCollection.addPipeline(pipe1);
-        jsonCollection.addPipeline(pipe2);
-        JsonObject jsonObject = jsonCollection.getJsonObject();
-
-        JsonArray pipelinesInDefault = jsonObject.getAsJsonArray("groups").get(0).getAsJsonObject().getAsJsonArray("pipelines");
-        assertThat(pipelinesInDefault.size(),is(2));
-        assertThat(pipelinesInDefault,hasItem(pipe1));
-        assertThat(pipelinesInDefault,hasItem(pipe2));
+        assertThat(jsonObject.getAsJsonArray("pipelines").size(),is(2));
     }
 
     @Test
     public void shouldReturnEnvironmentsInJsonObject()
     {
-        jsonCollection.addEnvironment(devEnv);
+        jsonCollection.addEnvironment(devEnv,"dev.json");
         JsonObject jsonObject = jsonCollection.getJsonObject();
         assertThat(jsonObject.getAsJsonArray("environments").size(),is(1));
     }
