@@ -153,21 +153,11 @@ public class JsonConfigPlugin implements GoPlugin {
 
             return DefaultGoPluginApiResponse.success(gson.toJson(responseJsonObject));
         }
-        catch (ConfigDirectoryParseException e) {
-            LOGGER.warn(String.format("%s errors occurred while parsing configuration repository.",e.getErrors().size(), e));
-            JsonObject responseJsonObject = new JsonObject();
-            responseJsonObject.add("errors", toJsonArray(e.getErrors()));
-            return DefaultGoPluginApiResponse.success(gson.toJson(responseJsonObject));
-        }
         catch (Exception e) {
             LOGGER.error("Unexpected error occurred while parsing configuration repository.", e);
-            JsonObject responseJsonObject = new JsonObject();
-            JsonArray errors = new JsonArray();
-            JsonObject exceptionAsJson = new JsonObject();
-            exceptionAsJson.addProperty("message",e.getMessage());
-            errors.add(exceptionAsJson);
-            responseJsonObject.add("errors", errors);
-            return DefaultGoPluginApiResponse.error(gson.toJson(responseJsonObject));
+            JsonConfigCollection config = new JsonConfigCollection();
+            config.addError(new PluginError(e.toString(),"JSON config plugin"));
+            return DefaultGoPluginApiResponse.error(gson.toJson(config.getJsonObject()));
         }
     }
 

@@ -74,67 +74,49 @@ public class ConfigDirectoryParserTest {
         assertThat(result.getPipelines().size(), is(1));
     }
     @Test
-    public void shouldThrowErrorsWithLocationWhenInvalidContent() throws Exception
+    public void shouldAppendErrorsWithLocationWhenInvalidContent() throws Exception
     {
         createFileWithContent("pipe1.gopipeline.json", this.pipe1String);
         createFileWithContent("pipeBad1.gopipeline.json", "bad pipeline");
-        try {
-            parser.parseDirectory(directory);
-            fail("should have thrown");
-        }
-        catch (ConfigDirectoryParseException parseException)
-        {
-            assertThat(parseException.getErrors().size(),is(1));
-            assertThat(parseException.getErrors().get(0).getLocation(), is("pipeBad1.gopipeline.json"));
-            assertThat(parseException.getErrors().get(0).getMessage(), startsWith("Failed to parse pipeline file as JSON: "));
-        }
+        JsonConfigCollection result = parser.parseDirectory(directory);
+        assertThat(result.getErrors().size(),is(1));
+        assertThat(result.getErrors().get(0).getAsJsonObject().getAsJsonPrimitive("location").getAsString(), is("pipeBad1.gopipeline.json"));
+        assertThat(result.getErrors().get(0).getAsJsonObject().getAsJsonPrimitive("message").getAsString(), startsWith("Failed to parse pipeline file as JSON: "));
+
     }
     @Test
-    public void shouldThrowAllErrorsWhenManyFilesHaveInvalidContent() throws Exception
+    public void shouldAppendAllErrorsWhenManyFilesHaveInvalidContent() throws Exception
     {
         createFileWithContent("pipe1.gopipeline.json", this.pipe1String);
         createFileWithContent("pipeBad1.gopipeline.json", "bad pipeline");
         createFileWithContent("pipeBad2.gopipeline.json", "bad pipeline 2");
-        try {
-            parser.parseDirectory(directory);
-            fail("should have thrown");
-        }
-        catch (ConfigDirectoryParseException parseException)
-        {
-            assertThat(parseException.getErrors().size(),is(2));
-        }
+
+        JsonConfigCollection result = parser.parseDirectory(directory);
+        assertThat(result.getErrors().size(),is(2));
     }
     @Test
-    public void shouldThrowErrorWhenPipelineFileIsEmpty() throws Exception
+    public void shouldAppendErrorWhenPipelineFileIsEmpty() throws Exception
     {
         createFileWithContent("pipe1.gopipeline.json", this.pipe1String);
         createFileWithContent("pipeBad1.gopipeline.json", "");
-        try {
-            parser.parseDirectory(directory);
-            fail("should have thrown");
-        }
-        catch (ConfigDirectoryParseException parseException)
-        {
-            assertThat(parseException.getErrors().size(),is(1));
-            assertThat(parseException.getErrors().get(0).getLocation(), is("pipeBad1.gopipeline.json"));
-            assertThat(parseException.getErrors().get(0).getMessage(), is("Pipeline file is empty"));
-        }
+
+        JsonConfigCollection result = parser.parseDirectory(directory);
+        assertThat(result.getErrors().size(),is(1));
+
+        assertThat(result.getErrors().size(),is(1));
+        assertThat(result.getErrors().get(0).getAsJsonObject().getAsJsonPrimitive("location").getAsString(), is("pipeBad1.gopipeline.json"));
+        assertThat(result.getErrors().get(0).getAsJsonObject().getAsJsonPrimitive("message").getAsString(), is("Pipeline file is empty"));
     }
     @Test
-    public void shouldThrowErrorWhenPipelineBlockIsEmpty() throws Exception
+    public void shouldAppendErrorWhenPipelineBlockIsEmpty() throws Exception
     {
         createFileWithContent("pipe1.gopipeline.json", this.pipe1String);
         createFileWithContent("pipeBad1.gopipeline.json", "{}");
-        try {
-            parser.parseDirectory(directory);
-            fail("should have thrown");
-        }
-        catch (ConfigDirectoryParseException parseException)
-        {
-            assertThat(parseException.getErrors().size(),is(1));
-            assertThat(parseException.getErrors().get(0).getLocation(), is("pipeBad1.gopipeline.json"));
-            assertThat(parseException.getErrors().get(0).getMessage(), is("Pipeline definition is empty"));
-        }
+
+        JsonConfigCollection result = parser.parseDirectory(directory);
+        assertThat(result.getErrors().size(),is(1));
+        assertThat(result.getErrors().get(0).getAsJsonObject().getAsJsonPrimitive("location").getAsString(), is("pipeBad1.gopipeline.json"));
+        assertThat(result.getErrors().get(0).getAsJsonObject().getAsJsonPrimitive("message").getAsString(), is("Pipeline definition is empty"));
     }
 
 
@@ -146,67 +128,49 @@ public class ConfigDirectoryParserTest {
         assertThat(result.getEnvironments().size(), is(1));
     }
     @Test
-    public void shouldThrowErrorsWithLocationWhenInvalidContentInEnvironment() throws Exception
+    public void shouldAppendErrorsWithLocationWhenInvalidContentInEnvironment() throws Exception
     {
         createFileWithContent("devenv.goenvironment.json", this.pipe1String);
         createFileWithContent("badEnv.goenvironment.json", "bad environment");
-        try {
-            parser.parseDirectory(directory);
-            fail("should have thrown");
-        }
-        catch (ConfigDirectoryParseException parseException)
-        {
-            assertThat(parseException.getErrors().size(),is(1));
-            assertThat(parseException.getErrors().get(0).getLocation(), is("badEnv.goenvironment.json"));
-            assertThat(parseException.getErrors().get(0).getMessage(), startsWith("Failed to parse environment file as JSON: "));
-        }
+        JsonConfigCollection result = parser.parseDirectory(directory);
+        assertThat(result.getErrors().size(),is(1));
+
+        assertThat(result.getErrors().get(0).getAsJsonObject().getAsJsonPrimitive("location").getAsString(), is("badEnv.goenvironment.json"));
+        assertThat(result.getErrors().get(0).getAsJsonObject().getAsJsonPrimitive("message").getAsString(), startsWith("Failed to parse environment file as JSON: "));
     }
     @Test
-    public void shouldThrowAllErrorsWhenManyEnvironmentFilesHaveInvalidContent() throws Exception
+    public void shouldAppendAllErrorsWhenManyEnvironmentFilesHaveInvalidContent() throws Exception
     {
         createFileWithContent("pipe1.gopipeline.json", this.pipe1String);
         createFileWithContent("badEnv.goenvironment.json", "bad env");
         createFileWithContent("badEnv2.goenvironment.json", "bad env 2");
-        try {
-            parser.parseDirectory(directory);
-            fail("should have thrown");
-        }
-        catch (ConfigDirectoryParseException parseException)
-        {
-            assertThat(parseException.getErrors().size(),is(2));
-        }
+        JsonConfigCollection result = parser.parseDirectory(directory);
+
+        assertThat(result.getErrors().size(),is(2));
     }
     @Test
-    public void shouldThrowErrorWhenEnvironmentFileIsEmpty() throws Exception
+    public void shouldAppendErrorWhenEnvironmentFileIsEmpty() throws Exception
     {
         createFileWithContent("devenv.goenvironment.json", this.devenvString);
         createFileWithContent("badEnv.goenvironment.json", "");
-        try {
-            parser.parseDirectory(directory);
-            fail("should have thrown");
-        }
-        catch (ConfigDirectoryParseException parseException)
-        {
-            assertThat(parseException.getErrors().size(),is(1));
-            assertThat(parseException.getErrors().get(0).getLocation(), is("badEnv.goenvironment.json"));
-            assertThat(parseException.getErrors().get(0).getMessage(), is("Environment file is empty"));
-        }
+
+        JsonConfigCollection result = parser.parseDirectory(directory);
+        assertThat(result.getErrors().size(),is(1));
+
+        assertThat(result.getErrors().get(0).getAsJsonObject().getAsJsonPrimitive("location").getAsString(), is("badEnv.goenvironment.json"));
+        assertThat(result.getErrors().get(0).getAsJsonObject().getAsJsonPrimitive("message").getAsString(), is("Environment file is empty"));
     }
     @Test
     public void shouldThrowErrorWhenEnvironmentBlockIsEmpty() throws Exception
     {
         createFileWithContent("devenv.goenvironment.json", this.devenvString);
         createFileWithContent("badEnv.goenvironment.json", "{}");
-        try {
-            parser.parseDirectory(directory);
-            fail("should have thrown");
-        }
-        catch (ConfigDirectoryParseException parseException)
-        {
-            assertThat(parseException.getErrors().size(),is(1));
-            assertThat(parseException.getErrors().get(0).getLocation(), is("badEnv.goenvironment.json"));
-            assertThat(parseException.getErrors().get(0).getMessage(), is("Environment definition is empty"));
-        }
+
+        JsonConfigCollection result = parser.parseDirectory(directory);
+        assertThat(result.getErrors().size(),is(1));
+
+        assertThat(result.getErrors().get(0).getAsJsonObject().getAsJsonPrimitive("location").getAsString(), is("badEnv.goenvironment.json"));
+        assertThat(result.getErrors().get(0).getAsJsonObject().getAsJsonPrimitive("message").getAsString(), is("Environment definition is empty"));
     }
 
     private void createFileWithContent(String filePath, String content) throws FileNotFoundException, UnsupportedEncodingException {

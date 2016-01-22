@@ -1,12 +1,10 @@
 package com.tw.go.config.json;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
+import com.google.gson.*;
 
 public class JsonConfigCollection {
     private static final int TARGET_VERSION = 1;
+    private final Gson gson;
 
     private JsonObject mainObject = new JsonObject();
     private JsonArray environments = new JsonArray();
@@ -15,6 +13,8 @@ public class JsonConfigCollection {
 
     public JsonConfigCollection()
     {
+        gson = new Gson();
+
         mainObject.add("target_version",new JsonPrimitive(TARGET_VERSION));
         mainObject.add("environments",environments);
         mainObject.add("pipelines",pipelines);
@@ -43,5 +43,13 @@ public class JsonConfigCollection {
 
     public JsonArray getPipelines() {
         return pipelines;
+    }
+
+    public JsonArray getErrors() {
+        return errors;
+    }
+
+    public void addError(PluginError error) {
+        errors.add(gson.toJsonTree(error));
     }
 }

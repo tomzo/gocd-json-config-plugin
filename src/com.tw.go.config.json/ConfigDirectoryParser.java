@@ -1,5 +1,6 @@
 package com.tw.go.config.json;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
@@ -23,7 +24,6 @@ public class ConfigDirectoryParser {
     }
 
     public JsonConfigCollection parseDirectory(File baseDir) throws Exception {
-        List<PluginError> errors = new ArrayList<>();
         JsonConfigCollection config = new JsonConfigCollection();
         for (String environmentFile : scanner.getFilesMatchingPattern(baseDir, environmentPattern)) {
             try {
@@ -33,14 +33,14 @@ public class ConfigDirectoryParser {
                     PluginError error = new PluginError(
                             String.format("Environment file is empty"),
                             environmentFile);
-                    errors.add(error);
+                    config.addError(error);
                 }
                 else if(env.equals(new JsonObject()))
                 {
                     PluginError error = new PluginError(
                             String.format("Environment definition is empty"),
                             environmentFile);
-                    errors.add(error);
+                    config.addError(error);
                 }
                 else
                     config.addEnvironment(env,environmentFile);
@@ -50,7 +50,7 @@ public class ConfigDirectoryParser {
                 PluginError error = new PluginError(
                         String.format("Failed to parse environment file as JSON: %s",parseException.getMessage()),
                         environmentFile);
-                errors.add(error);
+                config.addError(error);
             }
         }
 
@@ -62,14 +62,14 @@ public class ConfigDirectoryParser {
                     PluginError error = new PluginError(
                             String.format("Pipeline file is empty"),
                             pipelineFile);
-                    errors.add(error);
+                    config.addError(error);
                 }
                 else if(pipe.equals(new JsonObject()))
                 {
                     PluginError error = new PluginError(
                             String.format("Pipeline definition is empty"),
                             pipelineFile);
-                    errors.add(error);
+                    config.addError(error);
                 }
                 else
                     config.addPipeline(pipe,pipelineFile);
@@ -79,11 +79,9 @@ public class ConfigDirectoryParser {
                 PluginError error = new PluginError(
                         String.format("Failed to parse pipeline file as JSON: %s",parseException.getMessage()),
                         pipelineFile);
-                errors.add(error);
+                config.addError(error);
             }
         }
-        if(!errors.isEmpty())
-            throw new ConfigDirectoryParseException(errors);
 
         return config;
     }
