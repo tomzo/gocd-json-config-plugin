@@ -63,159 +63,135 @@ you can find examples of correct environments at the [bottom](#environment).
 #### Implementation note
 
 This plugin leverages JSON message format used internally for Go server
-and plugin communication. The only difference between these schemas is the
-fact that in plugins format a pipeline can contain a `group` property. Plugin
-transforms that into official schema where groups contain many pipelines.
+and plugin communication.
 
 Go pipeline and environment configuration has very deep structure. So instead
 of reading a very long schema, below you can find examples of all configuration elements.
 
-It is very close to [official xml schema](http://www.go.cd/documentation/user/16.1.0/configuration/configuration_reference.html)
+It is exactly like documented [here](https://github.com/tomzo/documentation/blob/1133-configrepo-extension/developer/writing_go_plugins/configrepo/version_1_0/config_objects.md)
+
+It is close to [official xml schema](http://www.go.cd/documentation/user/16.1.0/configuration/configuration_reference.html)
 and also [official JSONs in pipeline configuration API](https://api.go.cd/16.1.0/#get-pipeline-config)
 
-1. [Pipeline](#pipeline)
- * [Mingle](#mingle)
- * [Tracking tool](#tracking tool)
-1. [Stage](#stage)
-1. [Job](#job)
-1. [Tasks](#tasks)
- * [rake](#rake task)
- * [ant](#ant task)
- * [nant](#nant task)
- * [exec](#exec task)
- * [pluggabletask](#pluggable task)
-1. [Materials](#materials)
- * [pipeline](#pipeline material)
- * [package](#package material)
- * [git](#git material)
- * [svn](#svn material)
- * [perforce](#perforce material)
- * [tfs](#tfs material)
- * [hg](#hg material)
- * [pluggablescm](#pluggable scm material)
+## JSON Configuration objects
+
 1. [Environment](#environment)
+1. [Environment variables](#environment-variables)
+1. [Pipeline](#pipeline)
+    * [Mingle](#mingle)
+    * [Tracking tool](#tracking tool)
+    * [Timer](#timer)
+1. [Stage](#stage)
+    * [Approval](#approval)
+1. [Job](#job)
+    * [Property](#property)
+    * [Tab](#tab)
+1. [Tasks](tasks.md)
+    * [rake](tasks.md#rake)
+    * [ant](tasks.md#ant)
+    * [nant](tasks.md#nant)
+    * [exec](tasks.md#exec)
+    * [fetch](tasks.md#fetch)
+    * [pluggabletask](tasks.md#plugin)
+1. [Materials](materials.md)
+    * [dependency](materials.md#dependency)
+    * [package](materials.md#package)
+    * [git](materials.md#git)
+    * [svn](materials.md#svn)
+    * [perforce](materials.md#perforce)
+    * [tfs](materials.md#tfs)
+    * [hg](materials.md#hg)
+    * [pluggable scm](materials.md#pluggable)
 
+# Environment
 
-### Pipeline
+Configures a [Go environment](http://www.go.cd/documentation/user/current/configuration/managing_environments.html)
 
-Example 'customPipeline':
 ```json
 {
-  "name": "pipe2",
-  "labelTemplate": "foo-1.0-${COUNT}",
-  "isLocked": true,
-  "mingle": {
-    "baseUrl": "http://mingle.example.com",
-    "projectId": "my_project"
-  },
-  "timer": {
-    "timerSpec": "0 15 10 * * ? *",
-    "onlyOnChanges": false
-  },
-  "environmentVariables": [],
-  "materials": [
+  "location" : "src/environments/dev.yaml",
+  "name": "dev",
+  "environment_variables": [
     {
-      "url": "gitrepo",
-      "branch": "feature12",
-      "filter": [
-        "externals",
-        "tools"
-      ],
-      "folder": "dir1",
-      "autoUpdate": false,
-      "materialName": "gitMaterial1",
-      "type": "git"
+      "name": "key1",
+      "value": "value1"
+    }
+  ],
+  "agents": [
+    "123"
+  ],
+  "pipelines": [
+    "mypipeline1"
+  ]
+}
+```
+
+# Environment variables
+
+Environment variables is a JSON array that can be declared in Environments, Pipelines, Stages and Jobs.
+
+Any variable must contain `name` and `value` or `encrypted_value`.
+
+```json
+{
+  "environment_variables": [
+    {
+      "name": "key1",
+      "value": "value1"
     },
     {
-      "pipelineName": "pipe1",
-      "stageName": "build",
-      "materialName": "pipe1",
-      "type": "pipeline"
-    }
-  ],
-  "stages": [
-    {
-      "name": "build",
-      "fetchMaterials": true,
-      "artifactCleanupProhibited": false,
-      "cleanWorkingDir": false,
-      "environmentVariables": [],
-      "jobs": [
-        {
-          "name": "build",
-          "environmentVariables": [],
-          "tabs": [],
-          "resources": [],
-          "artifacts": [],
-          "artifactPropertiesGenerators": [],
-          "runOnAllAgents": false,
-          "runInstanceCount": 0,
-          "timeout": 0,
-          "tasks": [
-            {
-              "type": "rake"
-            }
-          ]
-        }
-      ]
+      "name": "keyd",
+      "encrypted_value": "v12@SDfwez"
     }
   ]
 }
 ```
 
-Example 'pipe1':
+# Pipeline
+
 ```json
 {
-  "name": "pipe1",
-  "isLocked": false,
-  "environmentVariables": [],
+  "location" : "src/pipelines/pipe2.yaml",
+  "group": "group1",
+  "name": "pipe2",
+  "label_template": "foo-1.0-${COUNT}",
+  "enable_pipeline_locking": true,
+  "mingle": {
+    "base_url": "http://mingle.example.com",
+    "project_identifier": "my_project"
+  },
+  "tracking_tool": null,
+  "timer": {
+    "spec": "0 15 10 * * ? *"
+  },
+  "environment_variables": [],
   "materials": [
-    {
-      "url": "gitrepo",
-      "branch": "feature12",
-      "filter": [
-        "externals",
-        "tools"
-      ],
-      "folder": "dir1",
-      "autoUpdate": false,
-      "materialName": "gitMaterial1",
-      "type": "git"
-    }
+    ...
   ],
   "stages": [
-    {
-      "name": "build",
-      "fetchMaterials": true,
-      "artifactCleanupProhibited": false,
-      "cleanWorkingDir": false,
-      "environmentVariables": [],
-      "jobs": [
-        {
-          "name": "build",
-          "environmentVariables": [],
-          "tabs": [],
-          "resources": [],
-          "artifacts": [],
-          "artifactPropertiesGenerators": [],
-          "runOnAllAgents": false,
-          "runInstanceCount": 0,
-          "timeout": 0,
-          "tasks": [
-            {
-              "type": "rake"
-            }
-          ]
-        }
-      ]
-    }
+    ...
   ]
 }
 ```
 
-#### Tracking tool
+Please note:
 
-Example 'tracking':
+ * templates are not supported
+ * parameters are not supported
+ * pipeline declares a group to which it belongs
+
+### Mingle
+
+```json
+{
+    "base_url": "https://mingle.example.com",
+    "project_identifier": "foobar_widgets",
+    "mql_grouping_conditions": "status > 'In Dev'"
+}
+```
+
+### Tracking tool
+
 ```json
 {
   "link": "http://your-trackingtool/yourproject/${ID}",
@@ -223,1335 +199,358 @@ Example 'tracking':
 }
 ```
 
-#### Mingle
+### Timer
 
-Example 'mingle':
 ```json
 {
-  "baseUrl": "http://mingle.example.com",
-  "projectId": "my_project"
+    "spec": "0 0 22 ? * MON-FRI",
+    "only_on_changes": true
 }
 ```
 
-Example 'invalidNoId':
-```json
-{
-  "baseUrl": "http://mingle.example.com"
-}
-```
+# Stage
 
-Example 'invalidNoUrl':
-```json
-{
-  "projectId": "my_project"
-}
-```
-
-#### Stage
-
-Example 'invalidSameJobNameTwice':
-```json
-{
-  "name": "build",
-  "fetchMaterials": true,
-  "artifactCleanupProhibited": false,
-  "cleanWorkingDir": false,
-  "environmentVariables": [],
-  "jobs": [
-    {
-      "name": "build",
-      "environmentVariables": [],
-      "tabs": [],
-      "resources": [],
-      "artifacts": [],
-      "artifactPropertiesGenerators": [],
-      "runOnAllAgents": false,
-      "runInstanceCount": 0,
-      "timeout": 0,
-      "tasks": [
-        {
-          "type": "rake"
-        }
-      ]
-    },
-    {
-      "name": "build",
-      "environmentVariables": [],
-      "tabs": [],
-      "resources": [],
-      "artifacts": [],
-      "artifactPropertiesGenerators": [],
-      "runOnAllAgents": false,
-      "runInstanceCount": 0,
-      "timeout": 0,
-      "tasks": [
-        {
-          "type": "rake"
-        },
-        {
-          "buildFile": "Rakefile.rb",
-          "target": "compile",
-          "type": "rake"
-        }
-      ]
-    }
-  ]
-}
-```
-
-
-Example 'stageWith2Jobs':
-```json
-{
-  "name": "build",
-  "fetchMaterials": true,
-  "artifactCleanupProhibited": false,
-  "cleanWorkingDir": false,
-  "environmentVariables": [],
-  "jobs": [
-    {
-      "name": "build",
-      "environmentVariables": [],
-      "tabs": [],
-      "resources": [],
-      "artifacts": [],
-      "artifactPropertiesGenerators": [],
-      "runOnAllAgents": false,
-      "runInstanceCount": 0,
-      "timeout": 0,
-      "tasks": [
-        {
-          "type": "rake"
-        },
-        {
-          "buildFile": "Rakefile.rb",
-          "target": "compile",
-          "type": "rake"
-        }
-      ]
-    },
-    {
-      "name": "test",
-      "environmentVariables": [],
-      "tabs": [],
-      "resources": [
-        "linux"
-      ],
-      "artifacts": [],
-      "artifactPropertiesGenerators": [],
-      "runOnAllAgents": false,
-      "runInstanceCount": 0,
-      "timeout": 0,
-      "tasks": [
-        {
-          "type": "ant"
-        }
-      ]
-    }
-  ]
-}
-```
-
-
-Example 'stageWithApproval':
-```json
-{
-  "name": "deploy",
-  "fetchMaterials": true,
-  "artifactCleanupProhibited": false,
-  "cleanWorkingDir": false,
-  "approval": {
-    "type": "manual",
-    "authorizedUsers": [],
-    "authorizedRoles": [
-      "manager"
-    ]
-  },
-  "environmentVariables": [],
-  "jobs": [
-    {
-      "name": "build",
-      "environmentVariables": [],
-      "tabs": [],
-      "resources": [],
-      "artifacts": [],
-      "artifactPropertiesGenerators": [],
-      "runOnAllAgents": false,
-      "runInstanceCount": 0,
-      "timeout": 0,
-      "tasks": [
-        {
-          "type": "rake"
-        }
-      ]
-    }
-  ]
-}
-```
-
-Example 'stage':
-```json
-{
-  "name": "build",
-  "fetchMaterials": true,
-  "artifactCleanupProhibited": false,
-  "cleanWorkingDir": false,
-  "environmentVariables": [],
-  "jobs": [
-    {
-      "name": "build",
-      "environmentVariables": [],
-      "tabs": [],
-      "resources": [],
-      "artifacts": [],
-      "artifactPropertiesGenerators": [],
-      "runOnAllAgents": false,
-      "runInstanceCount": 0,
-      "timeout": 0,
-      "tasks": [
-        {
-          "type": "rake"
-        }
-      ]
-    }
-  ]
-}
-```
-
-Example 'stageWithEnv':
 ```json
 {
   "name": "test",
-  "fetchMaterials": true,
-  "artifactCleanupProhibited": false,
-  "cleanWorkingDir": false,
-  "environmentVariables": [
+  "fetch_materials": true,
+  "never_cleanup_artifacts": false,
+  "clean_working_directory": false,
+  "approval" : null,
+  "environment_variables": [
     {
       "name": "TEST_NUM",
       "value": "1"
     }
   ],
   "jobs": [
-    {
-      "name": "test",
-      "environmentVariables": [],
-      "tabs": [],
-      "resources": [
-        "linux"
-      ],
-      "artifacts": [],
-      "artifactPropertiesGenerators": [],
-      "runOnAllAgents": false,
-      "runInstanceCount": 0,
-      "timeout": 0,
-      "tasks": [
-        {
-          "type": "ant"
-        }
-      ]
-    }
+    ...
   ]
 }
 ```
 
+### Approval
 
-#### Job
-
-Example 'jobWithVar':
-```json
-{
-  "name": "build",
-  "environmentVariables": [
-    {
-      "name": "key1",
-      "value": "value1"
-    }
-  ],
-  "tabs": [],
-  "resources": [],
-  "artifacts": [],
-  "artifactPropertiesGenerators": [],
-  "runOnAllAgents": false,
-  "runInstanceCount": 0,
-  "timeout": 0,
-  "tasks": [
-    {
-      "type": "rake"
-    }
-  ]
-}
-```
-
-Example 'jobWithTab':
-```json
-{
-  "name": "test",
-  "environmentVariables": [],
-  "tabs": [
-    {
-      "name": "test",
-      "path": "results.xml"
-    }
-  ],
-  "resources": [],
-  "artifacts": [],
-  "artifactPropertiesGenerators": [],
-  "runOnAllAgents": false,
-  "runInstanceCount": 0,
-  "timeout": 0,
-  "tasks": [
-    {
-      "type": "ant"
-    }
-  ]
-}
-```
-
-Example 'jobWithProp':
-```json
-{
-  "name": "perfTest",
-  "environmentVariables": [],
-  "tabs": [],
-  "resources": [],
-  "artifacts": [],
-  "artifactPropertiesGenerators": [
-    {
-      "name": "perf",
-      "src": "test.xml",
-      "xpath": "substring-before(//report/data/all/coverage[starts-with(@type,\u0027class\u0027)]/@value, \u0027%\u0027)"
-    }
-  ],
-  "runOnAllAgents": false,
-  "runInstanceCount": 0,
-  "timeout": 0,
-  "tasks": [
-    {
-      "type": "rake"
-    }
-  ]
-}
-```
-
-Example 'jobWithResource':
-```json
-{
-  "name": "test",
-  "environmentVariables": [],
-  "tabs": [],
-  "resources": [
-    "linux"
-  ],
-  "artifacts": [],
-  "artifactPropertiesGenerators": [],
-  "runOnAllAgents": false,
-  "runInstanceCount": 0,
-  "timeout": 0,
-  "tasks": [
-    {
-      "type": "ant"
-    }
-  ]
-}
-```
-
-Example 'buildRake':
-```json
-{
-  "name": "build",
-  "environmentVariables": [],
-  "tabs": [],
-  "resources": [],
-  "artifacts": [],
-  "artifactPropertiesGenerators": [],
-  "runOnAllAgents": false,
-  "runInstanceCount": 0,
-  "timeout": 0,
-  "tasks": [
-    {
-      "type": "rake"
-    }
-  ]
-}
-```
-
-Example 'build2Rakes':
-```json
-{
-  "name": "build",
-  "environmentVariables": [],
-  "tabs": [],
-  "resources": [],
-  "artifacts": [],
-  "artifactPropertiesGenerators": [],
-  "runOnAllAgents": false,
-  "runInstanceCount": 0,
-  "timeout": 0,
-  "tasks": [
-    {
-      "type": "rake"
-    },
-    {
-      "buildFile": "Rakefile.rb",
-      "target": "compile",
-      "type": "rake"
-    }
-  ]
-}
-```
-
-
-#### PropertyGenerator
-
-
-Example 'propGen':
-```json
-{
-  "name": "coverage.class",
-  "src": "target/emma/coverage.xml",
-  "xpath": "substring-before(//report/data/all/coverage[starts-with(@type,\u0027class\u0027)]/@value, \u0027%\u0027)"
-}
-```
-
-
-#### Timer
-
-Example 'timer':
-```json
-{
-  "timerSpec": "0 15 10 * * ? *",
-  "onlyOnChanges": false
-}
-```
-
-#### Approval
-
-Approval must have `type` - either "manual" or "success".
-
-Example 'manualWithAuth':
 ```json
 {
   "type": "manual",
-  "authorizedUsers": [],
-  "authorizedRoles": [
+  "users": [],
+  "roles": [
     "manager"
   ]
 }
 ```
 
-Example 'manual':
+# Job
+
 ```json
 {
-  "type": "manual",
-  "authorizedUsers": [],
-  "authorizedRoles": []
-}
-```
-
-
-Example 'success':
-```json
-{
-  "type": "success",
-  "authorizedUsers": [],
-  "authorizedRoles": []
-}
-```
-
-#### Tab
-
-Example 'tab':
-```json
-{
-  "name": "results",
-  "path": "test.xml"
-}
-```
-
-#### Artifact
-
-Artifact must have source directory
-
-Example 'artifact':
-```json
-{
-  "source": "src",
-  "destination": "dest"
-}
-```
-
-#### Tasks
-
-Any task must have `type`. Valid types are:
- * rake
- * ant
- * nant
- * exec
- * pluggabletask
-
-##### Ant task
-
-Example 'antCompileTask':
-```json
-{
-  "target": "compile",
-  "type": "ant"
-}
-```
-
-Example 'antTask':
-```json
-{
-  "type": "ant"
-}
-```
-
-Example 'antCompileFileTask':
-```json
-{
-  "buildFile": "mybuild.xml",
-  "target": "compile",
-  "type": "ant"
-}
-```
-
-Example 'antWithDirTask':
-```json
-{
-  "target": "build",
-  "workingDirectory": "src/tasks",
-  "type": "ant"
-}
-```
-
-#### Rake task
-
-Example 'rakeWithDirTask':
-```json
-{
-  "target": "build",
-  "workingDirectory": "src/tasks",
-  "type": "rake"
-}
-```
-
-Example 'rakeCompileTask':
-```json
-{
-  "target": "compile",
-  "type": "rake"
-}
-```
-
-Example 'rakeCompileFileTask':
-```json
-{
-  "buildFile": "Rakefile.rb",
-  "target": "compile",
-  "type": "rake"
-}
-```
-
-Example 'rakeTask':
-```json
-{
-  "type": "rake"
-}
-```
-
-#### Exec task
-
-Example 'execInDir':
-```json
-{
-  "command": "/usr/local/bin/rake",
-  "workingDirectory": "myProjectDir",
-  "args": [],
-  "type": "exec"
-}
-```
-
-Example 'customExec':
-```json
-{
-  "command": "rake",
-  "workingDirectory": "dir",
-  "timeout": 120,
-  "args": [
-    "-f",
-    "Rakefile.rb"
+  "name": "test",
+  "environment_variables": [],
+  "tabs": [
+     {
+       "name": "test",
+       "path": "results.xml"
+     }
+   ],
+   "resources": [
+    "linux"
   ],
-  "type": "exec",
-  "runIf": "any",
-  "onCancel": {
-    "command": "/usr/local/bin/ruby",
-    "args": [],
-    "type": "exec"
-  }
-}
-```
-
-Example 'simpleExec':
-```json
-{
-  "command": "/usr/local/bin/ruby",
-  "args": [],
-  "type": "exec"
-}
-```
-
-Example 'simpleExecWithArgs':
-```json
-{
-  "command": "/usr/local/bin/ruby",
-  "args": [
-    "backup.rb"
-  ],
-  "type": "exec"
-}
-```
-
-Example 'simpleExecRunIf':
-```json
-{
-  "command": "/usr/local/bin/ruby",
-  "args": [],
-  "type": "exec",
-  "runIf": "failed"
-}
-```
-
-Example 'invalidNoCommand':
-```json
-{
-  "args": [],
-  "type": "exec"
-}
-```
-
-
-#### Fetch artifact task
-
-Example 'fetch':
-```json
-{
-  "stage": "build",
-  "job": "buildjob",
-  "source": "bin",
-  "sourceIsDir": true,
-  "type": "fetchartifact"
-}
-```
-
-Example 'fetchFromPipe':
-```json
-{
-  "pipelineName": "pipeline1",
-  "stage": "build",
-  "job": "buildjob",
-  "source": "bin",
-  "sourceIsDir": true,
-  "type": "fetchartifact"
-}
-```
-
-Example 'fetchToDest':
-```json
-{
-  "stage": "build",
-  "job": "buildjob",
-  "source": "bin",
-  "sourceIsDir": true,
-  "destination": "lib",
-  "type": "fetchartifact"
-}
-```
-
-Example 'invalidFetchNoSource':
-```json
-{
-  "stage": "build",
-  "job": "buildjob",
-  "sourceIsDir": true,
-  "type": "fetchartifact"
-}
-```
-
-Example 'invalidFetchNoStage':
-```json
-{
-  "job": "buildjob",
-  "source": "bin",
-  "sourceIsDir": true,
-  "type": "fetchartifact"
-}
-```
-
-Example 'invalidFetchNoJob':
-```json
-{
-  "stage": "build",
-  "source": "bin",
-  "sourceIsDir": true,
-  "type": "fetchartifact"
-}
-```
-
-#### Nant task
-
-Example 'nantWithDirTask':
-```json
-{
-  "target": "build",
-  "workingDirectory": "src/tasks",
-  "type": "nant"
-}
-```
-
-Example 'nantWithPath':
-```json
-{
-  "nantPath": "/path/to/nant",
-  "buildFile": "mybuild.xml",
-  "target": "build",
-  "workingDirectory": "src/tasks",
-  "type": "nant"
-}
-```
-
-Example 'nantCompileTask':
-```json
-{
-  "target": "compile",
-  "type": "nant"
-}
-```
-
-Example 'nantTask':
-```json
-{
-  "type": "nant"
-}
-```
-
-Example 'nantCompileFileTask':
-```json
-{
-  "buildFile": "mybuild.xml",
-  "target": "compile",
-  "type": "nant"
-}
-```
-
-#### Pluggable task
-
-Example 'invalidNoPlugin':
-```json
-{
-  "type": "pluggabletask"
-}
-```
-
-Example 'invalidDuplicatedKeys':
-```json
-{
-  "pluginConfiguration": {
-    "id": "curl.task.plugin",
-    "version": "1"
-  },
-  "configuration": [
+  "artifacts": [
     {
-      "key": "Url",
-      "value": "http://www.google.com"
-    },
-    {
-      "key": "Url",
-      "value": "http://www.gg.com"
+      "source": "src",
+      "destination": "dest",
+      "type": "test"
     }
   ],
-  "type": "pluggabletask"
-}
-```
-
-Example 'curl':
-```json
-{
-  "pluginConfiguration": {
-    "id": "curl.task.plugin",
-    "version": "1"
-  },
-  "configuration": [
+  "properties": [
     {
-      "key": "Url",
-      "value": "http://www.google.com"
-    },
-    {
-      "key": "SecureConnection",
-      "value": "no"
-    },
-    {
-      "key": "RequestType",
-      "value": "no"
+      "name": "perf",
+      "source": "test.xml",
+      "xpath": "substring-before(//report/data/all/coverage[starts-with(@type,\u0027class\u0027)]/@value, \u0027%\u0027)"
     }
   ],
-  "type": "pluggabletask"
+  "tasks": [
+    ...
+  ]
 }
 ```
 
-Example 'example':
+### Property
+
 ```json
 {
-  "pluginConfiguration": {
-    "id": "example.task.plugin",
-    "version": "1"
-  },
-  "configuration": [],
-  "type": "pluggabletask"
+  "name": "coverage.class",
+  "source": "target/emma/coverage.xml",
+  "xpath": "substring-before(//report/data/all/coverage[starts-with(@type,'class')]/@value, '%')"
 }
 ```
 
-### Materials
+### Tab
 
-Material must have `type`. Valid types are:
- * pipeline
- * package
- * git
- * svn
- * p4
- * tfs
- * hg
- * pluggablescm
-
-#### Pipeline material
-
-Example 'dependsOnPipeline':
 ```json
 {
-  "pipelineName": "pipeline2",
-  "stageName": "build",
-  "type": "pipeline"
+      "name": "cobertura",
+      "path": "target/site/cobertura/index.html"
 }
 ```
 
-Example 'namedDependsOnPipeline':
-```json
-{
-  "pipelineName": "pipeline2",
-  "stageName": "build",
-  "materialName": "pipe2",
-  "type": "pipeline"
-}
-```
+# Material objects in `configrepo` extension point
 
-Example 'invalidNoPipeline':
-```json
-{
-  "stageName": "build",
-  "type": "pipeline"
-}
-```
+All materials:
 
-Example 'invalidNoStage':
-```json
-{
-  "pipelineName": "pipeline1",
-  "type": "pipeline"
-}
-```
+ * must have `type` - `git`, `svn`, `hg`, `p4`, `tfs`, `dependency`, `package`, `plugin`.
+ * can have `name` and must have `name` when there is more than one material in pipeline
 
-#### Package material
+SCM-related materials have `destination` field.
 
-Example 'namedPackageMaterial':
-```json
-{
-  "packageId": "apt-repo-id",
-  "materialName": "myapt",
-  "type": "package"
-}
-```
+## Git
 
-Example 'packageMaterial':
-```json
-{
-  "packageId": "apt-package-plugin-id",
-  "type": "package"
-}
-```
-
-Example 'invalidPackageMaterialNoId':
-```json
-{
-  "type": "package"
-}
-```
-
-#### Git material
-
-Example 'simpleGit':
-```json
-{
-  "url": "http://my.git.repository.com",
-  "filter": [],
-  "autoUpdate": true,
-  "type": "git"
-}
-```
-
-Example 'invalidNoUrl':
-```json
-{
-  "branch": "feature12",
-  "filter": [
-    "externals",
-    "tools"
-  ],
-  "folder": "dir1",
-  "autoUpdate": false,
-  "materialName": "gitMaterial1",
-  "type": "git"
-}
-```
-
-Example 'simpleGitBranch':
-```json
-{
-  "url": "http://other.git.repository.com",
-  "branch": "develop",
-  "filter": [],
-  "autoUpdate": true,
-  "type": "git"
-}
-```
-
-Example 'veryCustomGit':
 ```json
 {
   "url": "http://my.git.repository.com",
   "branch": "feature12",
-  "filter": [
-    "externals",
-    "tools"
-  ],
-  "folder": "dir1",
-  "autoUpdate": false,
-  "materialName": "gitMaterial1",
+  "filter": {
+    "ignore": [
+      "externals",
+      "tools"
+    ]
+  },
+  "destination": "dir1",
+  "auto_update": false,
+  "name": "gitMaterial1",
   "type": "git"
 }
 ```
 
+## Svn
 
-#### Hg material
-
-Example 'invalidHgNoUrl':
-```json
-{
-  "filter": [],
-  "autoUpdate": true,
-  "type": "hg"
-}
-```
-
-Example 'customHg':
-```json
-{
-  "url": "repos/myhg",
-  "filter": [
-    "externals",
-    "tools"
-  ],
-  "folder": "dir1",
-  "autoUpdate": false,
-  "materialName": "hgMaterial1",
-  "type": "hg"
-}
-```
-
-Example 'simpleHg':
-```json
-{
-  "url": "myHgRepo",
-  "filter": [],
-  "autoUpdate": true,
-  "type": "hg"
-}
-```
-
-#### Perforce material
-
-Example 'p4simple':
-```json
-{
-  "serverAndPort": "10.18.3.102:1666",
-  "view": "//depot/dev/src...          //anything/src/...",
-  "filter": [],
-  "autoUpdate": true,
-  "type": "p4"
-}
-```
-
-Example 'p4custom':
-```json
-{
-  "serverAndPort": "10.18.3.102:1666",
-  "userName": "user1",
-  "password": "pass1",
-  "useTickets": false,
-  "view": "//depot/dev/src...          //anything/src/...",
-  "filter": [
-    "lib",
-    "tools"
-  ],
-  "folder": "dir1",
-  "autoUpdate": false,
-  "materialName": "p4materialName",
-  "type": "p4"
-}
-```
-
-Example 'invalidP4NoServer':
-```json
-{
-  "view": "//depot/dev/src...          //anything/src/...",
-  "filter": [],
-  "autoUpdate": true,
-  "type": "p4"
-}
-```
-
-Example 'invalidP4NoView':
-```json
-{
-  "serverAndPort": "10.18.3.102:1666",
-  "filter": [],
-  "autoUpdate": true,
-  "type": "p4"
-}
-```
-
-Example 'invalidPasswordAndEncyptedPasswordSet':
-```json
-{
-  "serverAndPort": "10.18.3.102:1666",
-  "password": "pa$sw0rd",
-  "encryptedPassword": "26t\u003d$j64",
-  "filter": [],
-  "autoUpdate": true,
-  "type": "p4"
-}
-```
-
-
-#### Svn material
-
-Example 'simpleSvnAuth':
-```json
-{
-  "url": "http://myprivaterepo",
-  "userName": "john",
-  "password": "pa$sw0rd",
-  "checkExternals": false,
-  "filter": [],
-  "autoUpdate": true,
-  "type": "svn"
-}
-```
-
-Example 'customSvn':
 ```json
 {
   "url": "http://svn",
-  "userName": "user1",
+  "username": "user1",
   "password": "pass1",
-  "checkExternals": true,
-  "filter": [
-    "tools",
-    "lib"
-  ],
-  "folder": "destDir1",
-  "autoUpdate": false,
-  "materialName": "svnMaterial1",
+  "check_externals": true,
+  "filter": {
+    "ignore": [
+      "tools",
+      "lib"
+    ]
+  },
+  "destination": "destDir1",
+  "auto_update": false,
+  "name": "svnMaterial1",
   "type": "svn"
 }
 ```
 
-Example 'simpleSvn':
+Instead of plain `password` you may specify `encrypted_password` with encrypted content
+which usually makes more sense considering that value is stored in SCM.
+
+## Hg
+
 ```json
 {
-  "url": "http://mypublicrepo",
-  "checkExternals": false,
-  "filter": [],
-  "autoUpdate": true,
-  "type": "svn"
+  "url": "repos/myhg",
+  "filter": {
+    "ignore": [
+      "externals",
+      "tools"
+    ]
+  },
+  "destination": "dir1",
+  "auto_update": false,
+  "name": "hgMaterial1",
+  "type": "hg"
 }
 ```
 
-Example 'invalidPasswordAndEncyptedPasswordSet':
+## Perforce
+
 ```json
 {
-  "url": "http://myprivaterepo",
-  "password": "pa$sw0rd",
-  "encryptedPassword": "26t\u003d$j64",
-  "checkExternals": false,
-  "filter": [],
-  "autoUpdate": true,
-  "type": "svn"
+  "port": "10.18.3.102:1666",
+  "username": "user1",
+  "password": "pass1",
+  "use_tickets": false,
+  "view": "//depot/dev/src...          //anything/src/...",
+  "filter": {
+    "ignore": [
+      "lib",
+      "tools"
+    ]
+  },
+  "destination": "dir1",
+  "auto_update": false,
+  "name": "p4materialName",
+  "type": "p4"
 }
 ```
 
-Example 'invalidNoUrl':
-```json
-{
-  "checkExternals": false,
-  "filter": [],
-  "autoUpdate": true,
-  "type": "svn"
-}
-```
+Instead of plain `password` you may specify `encrypted_password` with encrypted content
+which usually makes more sense considering that value is stored in SCM.
 
-#### Tfs material
+## Tfs
 
-Example 'simpleTfs':
-```json
-{
-  "url": "url1",
-  "userName": "user1",
-  "projectPath": "projectDir",
-  "filter": [],
-  "autoUpdate": true,
-  "type": "tfs"
-}
-```
-
-Example 'customTfs':
 ```json
 {
   "url": "url3",
-  "userName": "user4",
+  "username": "user4",
   "domain": "example.com",
   "password": "pass",
-  "projectPath": "projectDir",
-  "filter": [
-    "tools",
-    "externals"
-  ],
-  "folder": "dir1",
-  "autoUpdate": false,
-  "materialName": "tfsMaterialName",
+  "project": "projectDir",
+  "filter": {
+    "ignore": [
+      "tools",
+      "externals"
+    ]
+  },
+  "destination": "dir1",
+  "auto_update": false,
+  "name": "tfsMaterialName",
   "type": "tfs"
 }
 ```
 
-#### Pluggable scm material
+Instead of plain `password` you may specify `encrypted_password` with encrypted content
+which usually makes more sense considering that value is stored in SCM.
 
-Example 'invalidNoScmId':
+## Dependency
+
 ```json
 {
-  "type": "pluggablescm"
+  "pipeline": "pipeline2",
+  "stage": "build",
+  "name": "pipe2",
+  "type": "dependency"
 }
 ```
 
-Example 'simpleNamedPluggableGit':
+## Package
+
 ```json
 {
-  "scmId": "mygit-id",
-  "materialName": "myGitMaterial",
-  "type": "pluggablescm"
+  "package_id": "apt-repo-id",
+  "name": "myapt",
+  "type": "package"
 }
 ```
 
-Example 'pluggableGitWithFilter':
+## Pluggable SCM
+
 ```json
 {
-  "scmId": "someScmGitRepositoryId",
-  "folder": "destinationDir",
-  "filter": [
-    "mydir"
-  ],
-  "materialName": "myPluggableGit",
-  "type": "pluggablescm"
+  "scm_id": "someScmGitRepositoryId",
+  "destination": "destinationDir",
+  "filter": {
+    "ignore": [
+      "dir1",
+      "dir2"
+    ]
+  },
+  "name": "myPluggableGit",
+  "type": "plugin"
 }
 ```
 
-Example 'simplePluggableGit':
+# Task objects in `configrepo` extension point
+
+Every task object must have `type` field. Which can be `exec`, `ant`, `nant`, `rake`, `fetch`, `plugin`
+
+Optionally any task can have `run_if` and `on_cancel`.
+
+ * `run_if` is a string. Valid values are `passed`, `failed`, `any`
+ * `on_cancel` is a task object. Same rules apply as to tasks described on this page.
+
+### Exec
+
 ```json
 {
-  "scmId": "mygit-id",
-  "type": "pluggablescm"
+    "type": "exec",
+    "run_if": "passed",
+    "on_cancel" : null,
+    "command": "make",
+    "arguments": [
+      "-j3",
+      "docs",
+      "instal"
+    ],
+    "working_directory": null      
 }
 ```
 
-Example 'pluggableGit':
+### Ant
+
 ```json
 {
-  "scmId": "someScmGitRepositoryId",
-  "folder": "destinationDir",
-  "filter": [],
-  "materialName": "myPluggableGit",
-  "type": "pluggablescm"
+  "build_file": "mybuild.xml",
+  "target": "compile",
+  "type": "ant",
+  "run_if": "any",
+  "on_cancel" : null,
 }
 ```
 
-Example 'pluggableGitWith2Filters':
+### Nant
+
 ```json
 {
-  "scmId": "someScmGitRepositoryId",
-  "folder": "destinationDir",
-  "filter": [
-    "dir1",
-    "dir2"
-  ],
-  "materialName": "myPluggableGit",
-  "type": "pluggablescm"
+  "type": "nant",
+  "run_if": "passed",
+  "working_directory": "script/build/123",
+  "build_file": null,
+  "target": null,
+  "nant_path": null
 }
 ```
 
-#### Environment
+### Rake
 
-
-Example 'devWithVariable':
 ```json
 {
-  "name": "dev",
-  "environmentVariables": [
-   {
-     "name": "key1",
-     "value": "value1"
-   }
- ],
+  "type": "rake",
+  "run_if": "passed",
+  "working_directory": "sample-project",
+  "build_file": null,
+  "target": null
 }
 ```
 
-Example 'empty':
+### Fetch
+
 ```json
 {
-  "name": "dev",
-  "environmentVariables": [],
-  "agents": [],
-  "pipelines": []
-}
+   "type": "fetch",
+   "run_if": "any",
+   "pipeline": "upstream",
+   "stage": "upstream_stage",
+   "job": "upstream_job",
+   "is_source_a_file": false,
+   "source": "result",
+   "destination": "test"
+ }
 ```
 
-Example 'uatWithPipeline':
+### Plugin
+
 ```json
 {
-  "name": "UAT",
-  "environmentVariables": [],
-  "agents": [],
-  "pipelines": [
-    "pipeline1"
-  ]
-}
-```
-
-##### Invalid environment examples
-
-Example 'invalidSamePipelineTwice':
-```json
-{
-  "name": "badenv3",
-  "environmentVariables": [],
-  "agents": [],
-  "pipelines": [
-    "pipe1",
-    "pipe1"
-  ]
-}
-```
-
-Example 'invalidSameEnvironmentVariableTwice':
-```json
-{
-  "name": "badenv",
-  "environmentVariables": [
+  "type": "plugin",
+  "configuration": [
     {
-      "name": "key",
-      "value": "value1"
+      "key": "ConverterType",
+      "value": "jsunit"
     },
     {
-      "name": "key",
-      "value": "value2"
+      "key": "password",
+      "encrypted_value": "ssd#%fFS*!Esx"
     }
   ],
-  "agents": [],
-  "pipelines": []
-}
-```
-
-Example 'invalidSameAgentTwice':
-```json
-{
-  "name": "badenv2",
-  "environmentVariables": [],
-  "agents": [
-    "123",
-    "123"
-  ],
-  "pipelines": []
-}
-```
-
-#### EnvironmentVariable
-
-Environment variable can be used in environments, pipelines, stages and jobs.
-All support encrypted and plain values.
-
-Example 'key1':
-```json
-{
-  "name": "key1",
-  "value": "value1"
-}
-```
-
-##### invalid environment variables
-
-Example 'invalid2ValuesSet':
-```json
-{
-  "name": "keyd",
-  "value": "value1",
-  "encryptedValue": "v123445"
-}
-```
-
-Example 'invalidValueNotSet':
-```json
-{
-  "name": "key5"
-}
-```
-
-Example 'invalidNameNotSet':
-```json
-{
-  "value": "23"
-}
-```
-
-#### PluginConfiguration
-
-Example 'pluginConfig':
-```json
-{
-  "id": "curl.task.plugin",
-  "version": "1"
-}
-```
-
-#### ConfigurationProperty
-
-Example 'configProperty':
-```json
-{
-  "key": "key1",
-  "value": "value1"
-}
-```
-
-Example 'configPropertyEncrypted':
-```json
-{
-  "key": "secret",
-  "encryptedValue": "213476%$"
+  "run_if": "passed",
+  "plugin_configuration": {
+    "id": "xunit.converter.task.plugin",
+    "version": "1"
+  },
+  "on_cancel": null
 }
 ```
