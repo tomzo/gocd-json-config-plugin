@@ -109,7 +109,6 @@ Configures a [Go environment](http://www.go.cd/documentation/user/current/config
 
 ```json
 {
-  "location" : "src/environments/dev.yaml",
   "name": "dev",
   "environment_variables": [
     {
@@ -151,7 +150,6 @@ Any variable must contain `name` and `value` or `encrypted_value`.
 
 ```json
 {
-  "location" : "src/pipelines/pipe2.yaml",
   "group": "group1",
   "name": "pipe2",
   "label_template": "foo-1.0-${COUNT}",
@@ -554,3 +552,21 @@ Optionally any task can have `run_if` and `on_cancel`.
   "on_cancel": null
 }
 ```
+
+# Contributing
+
+Create issues and PRs if
+ * something does not work as you expect it,
+ * documentation is not good enough
+ * you have questions about Go behavior with remote configuration
+
+There has been a long effort to make it possible to store configuration in SCMs,
+so obviously there will be some errors in lots of new code. Please file issues
+here or ask on [gocd gitter chat](https://gitter.im/gocd/gocd)
+
+# License and Authors
+
+License: Apache 2.0
+
+Authors:
+ * Tomasz Sętkowski <tom@ai-traders.com>

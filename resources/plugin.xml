@@ -9,7 +9,7 @@
         </description>
         <vendor>
             <name>Tomasz Setkowski</name>
-            <url>www.ai-traders.com</url>
+            <url>https://github.com/tomzo/gocd-json-config-plugin</url>
         </vendor>
     </about>
 </go-plugin>
