@@ -86,22 +86,22 @@ and also [official JSONs in pipeline configuration API](https://api.go.cd/16.1.0
 1. [Job](#job)
     * [Property](#property)
     * [Tab](#tab)
-1. [Tasks](tasks.md)
-    * [rake](tasks.md#rake)
-    * [ant](tasks.md#ant)
-    * [nant](tasks.md#nant)
-    * [exec](tasks.md#exec)
-    * [fetch](tasks.md#fetch)
-    * [pluggabletask](tasks.md#plugin)
-1. [Materials](materials.md)
-    * [dependency](materials.md#dependency)
-    * [package](materials.md#package)
-    * [git](materials.md#git)
-    * [svn](materials.md#svn)
-    * [perforce](materials.md#perforce)
-    * [tfs](materials.md#tfs)
-    * [hg](materials.md#hg)
-    * [pluggable scm](materials.md#pluggable)
+1. [Tasks](#tasks)
+    * [rake](#rake)
+    * [ant](#ant)
+    * [nant](#nant)
+    * [exec](#exec)
+    * [fetch](#fetch)
+    * [pluggabletask](#plugin)
+1. [Materials](#materials)
+    * [dependency](#dependency)
+    * [package](#package)
+    * [git](#git)
+    * [svn](#svn)
+    * [perforce](#perforce)
+    * [tfs](#tfs)
+    * [hg](#hg)
+    * [pluggable scm](#pluggable)
 
 # Environment
 
@@ -293,7 +293,7 @@ Please note:
 }
 ```
 
-# Material objects in `configrepo` extension point
+# Materials
 
 All materials:
 
@@ -451,7 +451,7 @@ which usually makes more sense considering that value is stored in SCM.
 }
 ```
 
-# Task objects in `configrepo` extension point
+# Tasks
 
 Every task object must have `type` field. Which can be `exec`, `ant`, `nant`, `rake`, `fetch`, `plugin`
 
