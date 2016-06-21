@@ -19,15 +19,16 @@ build Go from [my fork](https://github.com/tomzo/gocd) to try this out.
 ### Installation
 
 First you must install the plugin in Go server.
-You'll have to drop `.jar` to `/plugins` directory in your server installation.
-Plugin jars can be downloaded from [snap](https://snap-ci.com/tomzo/gocd-json-config-plugin/branch/master)
+You'll have to drop `.jar` to `plugins/external` [directory](https://docs.go.cd/current/extension_points/plugin_user_guide.html) in your server installation.
+Plugin jars can be downloaded from [snap](https://snap-ci.com/tomzo/gocd-json-config-plugin/branch/master) or
+from [releases page](https://github.com/tomzo/gocd-json-config-plugin/releases)
 
 ### Add configuration repository
 
 There is no UI to add configuration repositories so you'll have to edit the
 config XML.
 You will need to add `config-repo` section within `config-repos`.
-If `config-repos` does not exist yet then you add it right above first `<pipelines />`.
+If `config-repos` does not exist yet then you add it **right above first `<pipelines />`**.
 
 To add all configurations from git repository `https://github.com/tomzo/gocd-json-config-example.git`
 a section like this should be added:
