@@ -2,26 +2,29 @@
 
 # Go JSON configuration plugin
 
-This is a Go server plugin which allows to keep pipelines and environments configuration
-in version control systems supported by Go (git,svn,mercurial, etc.)
+**Go pipeline configuration as code**
 
-You can find an example repository at https://github.com/tomzo/gocd-json-config-example.git
+This is a Go server plugin which allows to keep **pipelines** and **environments** configuration
+in version control systems supported by Go (git,svn,mercurial, etc.).
+See [this document](https://docs.google.com/document/d/1_eGZaqIz9ydnYQJ_Xrcb3obXc-T6jIfV_pgZQNCydVk/pub)
+to find out what are Go's configuration repositories.
+
+### Resources:
+
+ * You can find an example repository at https://github.com/tomzo/gocd-json-config-example.git
+ * Go [feature](https://github.com/gocd/gocd/issues/1133) on github
 
 ## Quickstart
 
 ### Early access
 
-This plugin uses configuration repository extension in Go.
-[Feature](https://github.com/gocd/gocd/issues/1133) is not
-merged into official gocd repository. Currently you have to
-build Go from [my fork](https://github.com/tomzo/gocd) to try this out.
+Official Go release `16.6.0` has experimental support of this feature - **do not use in production**.
 
 ### Installation
 
 First you must install the plugin in Go server.
 You'll have to drop `.jar` to `plugins/external` [directory](https://docs.go.cd/current/extension_points/plugin_user_guide.html) in your server installation.
-Plugin jars can be downloaded from [snap](https://snap-ci.com/tomzo/gocd-json-config-plugin/branch/master) or
-from [releases page](https://github.com/tomzo/gocd-json-config-plugin/releases)
+Plugin jars can be downloaded from [releases page](https://github.com/tomzo/gocd-json-config-plugin/releases).
 
 ### Add configuration repository
 
@@ -41,6 +44,8 @@ a section like this should be added:
    </config-repo>
 </config-repos>
 ...
+<pipelines />
+...
 ```
 
 ## Configuration files
@@ -48,15 +53,15 @@ a section like this should be added:
 Using this plugin you can store any number of pipeline or environment
 configurations without a versioned repository like git.
 
-By default pipelines should be stored in `*.gopipeline.json` files
-and environments should be stored in `*.goenvironment.json` files.
+By default **pipelines** should be stored in `*.gopipeline.json` files
+and **environments** should be stored in `*.goenvironment.json` files.
 
 The file name pattern can be changed on plugin configuration page.
 
 ## Format
 
-The pipeline configuration files should be stored in format similar to
-one exposed by [go API](https://api.go.cd/16.1.0/#get-pipeline-config).
+The pipeline configuration files should be stored in format *similar* to
+one exposed by [go API](https://api.go.cd/current#get-pipeline-config).
 
 The format of environment configuration files is much simpler,
 you can find examples of correct environments at the [bottom](#environment).
@@ -302,6 +307,29 @@ All materials:
  * can have `name` and must have `name` when there is more than one material in pipeline
 
 SCM-related materials have `destination` field.
+
+### Filter - blacklist and whitelist
+
+All scm materials can have filter object:
+
+ * for **blacklisting**:
+```json
+"filter": {
+  "ignore": [
+    "externals",
+    "tools"
+  ]
+}
+```
+
+* for **whitelisting** (since Go `16.7.0` if [this](https://github.com/gocd/gocd/pull/2380) gets merged):
+```json
+"filter": {
+ "whitelist": [
+   "moduleA"
+ ]
+}
+```
 
 ## Git
 
