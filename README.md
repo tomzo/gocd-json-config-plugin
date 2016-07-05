@@ -92,6 +92,7 @@ and also [official JSONs in pipeline configuration API](https://api.go.cd/16.1.0
 1. [Job](#job)
     * [Property](#property)
     * [Tab](#tab)
+    * [Many instances](#run-many-instances)
 1. [Tasks](#tasks)
     * [rake](#rake)
     * [ant](#ant)
@@ -250,6 +251,7 @@ Please note:
 ```json
 {
   "name": "test",
+  "run_instance_count" : null,
   "environment_variables": [],
   "tabs": [
      {
@@ -299,6 +301,18 @@ Please note:
 }
 ```
 
+### Run many instances
+
+Part of **job** object can be [number of job to runs](https://docs.go.cd/current/advanced_usage/admin_spawn_multiple_jobs.html)
+```json
+"run_instance_count" : 6
+```
+Or to run on all agents
+```json
+"run_instance_count" : "all"
+```
+Default is `null` which runs just one job.
+
 # Materials
 
 All materials:
@@ -322,7 +336,7 @@ All scm materials can have filter object:
 }
 ```
 
-* for **whitelisting** (since Go `16.7.0` if [this](https://github.com/gocd/gocd/pull/2380) gets merged):
+* for **whitelisting** (since Go `>=16.7.0`):
 ```json
 "filter": {
  "whitelist": [
