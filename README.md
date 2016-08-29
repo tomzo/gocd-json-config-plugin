@@ -514,7 +514,7 @@ Optionally any task can have `run_if` and `on_cancel`.
     "arguments": [
       "-j3",
       "docs",
-      "instal"
+      "install"
     ],
     "working_directory": null      
 }
