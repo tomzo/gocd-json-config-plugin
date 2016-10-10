@@ -109,6 +109,7 @@ and also [official JSONs in pipeline configuration API](https://api.go.cd/16.1.0
     * [tfs](#tfs)
     * [hg](#hg)
     * [pluggable scm](#pluggable)
+    * [configrepo](#configrepo)
 
 # Environment
 
@@ -493,6 +494,57 @@ which usually makes more sense considering that value is stored in SCM.
   "type": "plugin"
 }
 ```
+
+## Configrepo
+
+This is a convenience for shorter and more consistent material declaration.
+When configuration repository is the same as one of pipeline materials,
+then you usually need to repeat definitions in XML and in JSON, for example:
+
+```json
+...
+  "materials": [
+    {
+      "url": "https://github.com/tomzo/gocd-json-config-example.git",
+      "branch" : "ci",
+      "type": "git",
+      "name" : "mygit"
+    }
+  ],
+...
+```
+
+And in server XML:
+```xml
+<config-repos>
+   <config-repo plugin="json.config.plugin">
+     <git url="https://github.com/tomzo/gocd-json-config-example.git" branch="ci" />
+   </config-repo>
+</config-repos>
+```
+
+Notice that url and branch is repeated. This is inconvenient in case when you move repository,
+because it requires 2 updates, in code and in server XML.
+
+Using  **`configrepo` material type**, above repetition can be avoided,
+last example can be refactored into:
+
+```json
+...
+  "materials": [
+    {
+      "type": "configrepo",
+      "name" : "mygit"
+    }
+  ],
+...
+```
+
+Server interprets `configrepo` material in this way:
+
+> Clone the material configuration of the repository we are parsing **as is in XML** and replace **name, destination and filters (whitelist/blacklist)**,
+then use the modified clone in place of `configrepo` material.
+
 
 # Tasks
 
