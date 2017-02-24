@@ -256,6 +256,8 @@ Please note:
   "name": "test",
   "run_instance_count" : null,
   "environment_variables": [],
+  "timeout": 180,
+  "elastic_profile_id": "docker-big-image-1",
   "tabs": [
      {
        "name": "test",
