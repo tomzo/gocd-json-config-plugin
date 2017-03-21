@@ -18,9 +18,7 @@ to find out what are Go's configuration repositories.
 
 ## Quickstart
 
-### Early access
-
-Official Go release `16.6.0` has experimental support of this feature - **do not use in production**.
+Make sure you are running at least `16.8.0` GoCD server.
 
 ### Installation
 
