@@ -37,7 +37,7 @@ a section like this should be added:
 ```xml
 ...
 <config-repos>
-   <config-repo plugin="json.config.plugin">
+   <config-repo pluginId="json.config.plugin" id="repo1">
      <git url="https://github.com/tomzo/gocd-json-config-example.git" />
    </config-repo>
 </config-repos>
@@ -517,7 +517,7 @@ then you usually need to repeat definitions in XML and in JSON, for example:
 And in server XML:
 ```xml
 <config-repos>
-   <config-repo plugin="json.config.plugin">
+   <config-repo pluginId="json.config.plugin" id="repo1">
      <git url="https://github.com/tomzo/gocd-json-config-example.git" branch="ci" />
    </config-repo>
 </config-repos>
