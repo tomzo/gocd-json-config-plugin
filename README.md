@@ -160,6 +160,12 @@ Any variable must contain `name` and `value` or `encrypted_value`.
   "name": "pipe2",
   "label_template": "foo-1.0-${COUNT}",
   "enable_pipeline_locking": true,
+  "parameters": [
+    {
+      "name": "param",
+      "value": "parameter"
+    }
+  ],
   "mingle": {
     "base_url": "http://mingle.example.com",
     "project_identifier": "my_project"
@@ -178,11 +184,30 @@ Any variable must contain `name` and `value` or `encrypted_value`.
 }
 ```
 
+#### Referencing an existing template in a config repo:
+
+```json
+{
+  "group": "group1",
+  "name": "pipe-with-template",
+  "label_template": "foo-1.0-${COUNT}",
+  "enable_pipeline_locking": true,
+  "template": "template1",
+  "parameters": [
+    {
+      "name": "param",
+      "value": "parameter"
+    }
+  ],
+  "materials": [
+    ...
+  ]
+}
+```
+
 Please note:
 
- * templates are not supported
- * parameters are not supported
- * pipeline declares a group to which it belongs
+ * Pipeline declares a group to which it belongs
 
 ### Mingle
 
