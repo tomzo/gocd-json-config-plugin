@@ -1,18 +1,18 @@
 [![Join the chat at https://gitter.im/gocd/gocd](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/gocd/configrepo-plugins?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-# Go JSON configuration plugin
+# GoCD JSON configuration plugin
 
-**Go pipeline configuration as code**
+**GoCD pipeline configuration as code**
 
-This is a Go server plugin which allows to keep **pipelines** and **environments** configuration
-in version control systems supported by Go (git,svn,mercurial, etc.).
-See [this document](https://docs.google.com/document/d/1_eGZaqIz9ydnYQJ_Xrcb3obXc-T6jIfV_pgZQNCydVk/pub)
-to find out what are Go's configuration repositories.
+This is a [GoCD](https://www.gocd.org) server plugin which allows to keep **pipelines** and **environments** configuration
+in version control systems supported by GoCD (git, svn, mercurial, etc.).
+See [this document](https://docs.gocd.org/current/advanced_usage/pipelines_as_code.html)
+to find out what GoCD's configuration repositories are.
 
 ### Resources:
 
  * You can find an example repository at https://github.com/tomzo/gocd-json-config-example.git
- * Go [feature](https://github.com/gocd/gocd/issues/1133) on github
+ * Original GoCD [issue](https://github.com/gocd/gocd/issues/1133) on GitHub
 
 ## Quickstart
 
@@ -20,14 +20,14 @@ Make sure you are running at least `16.8.0` GoCD server.
 
 ### Installation
 
-First you must install the plugin in Go server.
-You'll have to drop `.jar` to `plugins/external` [directory](https://docs.go.cd/current/extension_points/plugin_user_guide.html) in your server installation.
+If you're using a GoCD version *older than 17.8.0*, you need to install the plugin in the GoCD server.
+
+You'll have to drop `.jar` to `plugins/external` [directory](https://docs.gocd.org/current/extension_points/plugin_user_guide.html) in your server installation.
 Plugin jars can be downloaded from [releases page](https://github.com/tomzo/gocd-json-config-plugin/releases).
 
 ### Add configuration repository
 
-There is no UI to add configuration repositories so you'll have to edit the
-config XML.
+There is no UI to add configuration repositories so you'll have to edit the config XML.
 You will need to add `config-repo` section within `config-repos`.
 If `config-repos` does not exist yet then you add it **right above first `<pipelines />`**.
 
@@ -59,23 +59,23 @@ The file name pattern can be changed on plugin configuration page.
 ## Format
 
 The pipeline configuration files should be stored in format *similar* to
-one exposed by [go API](https://api.go.cd/current#get-pipeline-config).
+one exposed by [GoCD API](https://api.gocd.org/current#get-pipeline-config).
 
 The format of environment configuration files is much simpler,
 you can find examples of correct environments at the [bottom](#environment).
 
 #### Implementation note
 
-This plugin leverages JSON message format used internally for Go server
+This plugin leverages JSON message format used internally for GoCD server
 and plugin communication.
 
-Go pipeline and environment configuration has very deep structure. So instead
+GoCD pipeline and environment configuration has very deep structure. So instead
 of reading a very long schema, below you can find examples of all configuration elements.
 
 It is exactly like documented [here](https://github.com/tomzo/documentation/blob/1133-configrepo-extension/developer/writing_go_plugins/configrepo/version_1_0/config_objects.md)
 
-It is close to [official xml schema](http://www.go.cd/documentation/user/16.1.0/configuration/configuration_reference.html)
-and also [official JSONs in pipeline configuration API](https://api.go.cd/16.1.0/#get-pipeline-config)
+It is close to [official xml schema](https://docs.gocd.org/16.1.0/configuration/configuration_reference.html)
+and also [official JSONs in pipeline configuration API](https://api.gocd.org/16.1.0/#get-pipeline-config)
 
 ## JSON Configuration objects
 
@@ -111,7 +111,7 @@ and also [official JSONs in pipeline configuration API](https://api.go.cd/16.1.0
 
 # Environment
 
-Configures a [Go environment](http://www.go.cd/documentation/user/current/configuration/managing_environments.html)
+Configures a [GoCD environment](https://docs.gocd.org/current/configuration/managing_environments.html)
 
 ```json
 {
@@ -304,7 +304,7 @@ Please note:
 
 ### Run many instances
 
-Part of **job** object can be [number of job to runs](https://docs.go.cd/current/advanced_usage/admin_spawn_multiple_jobs.html)
+Part of **job** object can be [number of job to runs](https://docs.gocd.org/current/advanced_usage/admin_spawn_multiple_jobs.html)
 ```json
 "run_instance_count" : 6
 ```
@@ -653,11 +653,11 @@ Optionally any task can have `run_if` and `on_cancel`.
 Create issues and PRs if
  * something does not work as you expect it,
  * documentation is not good enough
- * you have questions about Go behavior with remote configuration
+ * you have questions about GoCD behavior with remote configuration
 
 There has been a long effort to make it possible to store configuration in SCMs,
 so obviously there will be some errors in lots of new code. Please file issues
-here or ask on [gocd gitter chat](https://gitter.im/gocd/gocd)
+here or ask on [gocd gitter chat](https://gitter.im/gocd/gocd).
 
 # License and Authors
 
