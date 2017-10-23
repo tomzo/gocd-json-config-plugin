@@ -149,6 +149,7 @@ public class JsonConfigPlugin implements GoPlugin {
                     scanner,parser, pipelinePattern, environmentPattern);
             JsonConfigCollection config = configDirectoryParser.parseDirectory(baseDir);
 
+            config.updateVersionFromPipelinesAndEnvironments();
             JsonObject responseJsonObject = config.getJsonObject();
 
             return DefaultGoPluginApiResponse.success(gson.toJson(responseJsonObject));
