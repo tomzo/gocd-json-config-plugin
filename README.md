@@ -64,6 +64,17 @@ one exposed by [GoCD API](https://api.gocd.org/current#get-pipeline-config).
 The format of environment configuration files is much simpler,
 you can find examples of correct environments at the [bottom](#environment).
 
+### Format version
+
+Please note that it is now recommended to declare `format_version` in each `*.gopipeline.json` or `*.goenvironment.json` file.
+Version `2` will be most likely introduced in GoCD v17.12.
+Currently it is recommended to declare consistent version in all your files:
+```
+{
+  "format_version" : 1
+}
+```
+
 #### Implementation note
 
 This plugin leverages JSON message format used internally for GoCD server
@@ -74,14 +85,15 @@ of reading a very long schema, below you can find examples of all configuration 
 
 It is exactly like documented [here](https://github.com/tomzo/documentation/blob/1133-configrepo-extension/developer/writing_go_plugins/configrepo/version_1_0/config_objects.md)
 
-It is close to [official xml schema](https://docs.gocd.org/16.1.0/configuration/configuration_reference.html)
-and also [official JSONs in pipeline configuration API](https://api.gocd.org/16.1.0/#get-pipeline-config)
+It is **close to** [official xml schema](https://docs.gocd.org/16.1.0/configuration/configuration_reference.html)
+and also [official JSONs in pipeline configuration API](https://api.gocd.org/current/#get-pipeline-config)
 
 ## JSON Configuration objects
 
 1. [Environment](#environment)
 1. [Environment variables](#environment-variables)
 1. [Pipeline](#pipeline)
+    * [Locking](#pipeline-locking)
     * [Mingle](#mingle)
     * [Tracking tool](#tracking tool)
     * [Timer](#timer)
@@ -156,10 +168,11 @@ Any variable must contain `name` and `value` or `encrypted_value`.
 
 ```json
 {
+  "format_version" : 1,
   "group": "group1",
   "name": "pipe2",
   "label_template": "foo-1.0-${COUNT}",
-  "enable_pipeline_locking": true,
+  "enable_pipeline_locking" : false,
   "parameters": [
     {
       "name": "param",
@@ -188,10 +201,11 @@ Any variable must contain `name` and `value` or `encrypted_value`.
 
 ```json
 {
+  "format_version" : 1,
   "group": "group1",
   "name": "pipe-with-template",
   "label_template": "foo-1.0-${COUNT}",
-  "enable_pipeline_locking": true,
+  "enable_pipeline_locking" : false,
   "template": "template1",
   "parameters": [
     {
@@ -208,6 +222,19 @@ Any variable must contain `name` and `value` or `encrypted_value`.
 Please note:
 
  * Pipeline declares a group to which it belongs
+
+### Pipeline locking
+
+Expected since GoCD v17.12, you need to use `lock_behaviour` rather than `enable_pipeline_locking`.
+```
+"lock_behaviour" : "none"
+```
+
+`lock_behaviour` can be one of:
+ * `lockOnFailure` - same as `enable_pipeline_locking: true`
+ * `unlockWhenFinished` -
+ * `none` - same `enable_pipeline_locking: false`
+
 
 ### Mingle
 
