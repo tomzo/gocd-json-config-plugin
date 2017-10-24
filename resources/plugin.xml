@@ -5,7 +5,7 @@
         <version>PLUGIN_VERSION_NUMBER</version>
         <target-go-version>GO_TARGET_VERSION_NUMBER</target-go-version>
         <description>
-            Configuration plugin that supports Go configuration in JSON
+            Configuration plugin that supports GoCD configuration in JSON
         </description>
         <vendor>
             <name>Tomasz Setkowski</name>
