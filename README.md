@@ -225,12 +225,12 @@ Please note:
 
 ### Pipeline locking
 
-Expected since GoCD v17.12, you need to use `lock_behaviour` rather than `enable_pipeline_locking`.
+Expected since GoCD v17.12, you need to use `lock_behavior` rather than `enable_pipeline_locking`.
 ```
-"lock_behaviour" : "none"
+"lock_behavior" : "none"
 ```
 
-`lock_behaviour` can be one of:
+`lock_behavior` can be one of:
  * `lockOnFailure` - same as `enable_pipeline_locking: true`
  * `unlockWhenFinished` -
  * `none` - same `enable_pipeline_locking: false`
