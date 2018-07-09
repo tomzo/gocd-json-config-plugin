@@ -29,7 +29,7 @@ Plugin jars can be downloaded from [releases page](https://github.com/tomzo/gocd
 
 There is no UI to add configuration repositories so you'll have to edit the config XML.
 You will need to add `config-repo` section within `config-repos`.
-If `config-repos` does not exist yet then you add it **right above first `<pipelines />`**.
+If `config-repos` does not exist yet then you add it **above first `<pipelines />` and `<atifactStores/>`**.
 
 To add all configurations from git repository `https://github.com/tomzo/gocd-json-config-example.git`
 a section like this should be added:
@@ -42,6 +42,7 @@ a section like this should be added:
    </config-repo>
 </config-repos>
 ...
+<artifactStores />
 <pipelines />
 ...
 ```
@@ -67,11 +68,11 @@ you can find examples of correct environments at the [bottom](#environment).
 ### Format version
 
 Please note that it is now recommended to declare `format_version` in each `*.gopipeline.json` or `*.goenvironment.json` file.
-Version `2` will be most likely introduced in GoCD v17.12.
+Version `3` will be introduced in GoCD 18.7.0
 Currently it is recommended to declare consistent version in all your files:
 ```
 {
-  "format_version" : 1
+  "format_version" : 3
 }
 ```
 
@@ -320,6 +321,25 @@ Expected since GoCD v17.12, you need to use `lock_behavior` rather than `enable_
       "source": "src",
       "destination": "dest",
       "type": "test"
+    },
+    {
+      "type": "external",
+      "id": "docker-release-candidate",
+      "store_id": "dockerhub",
+      "configuration": [
+        {
+          "key": "Image",
+          "value": "gocd/gocd-demo"
+        },
+        {
+          "key": "Tag",
+          "value": "${GO_PIPELINE_COUNTER}"
+        },
+        {
+          "key": "some_secure_property",
+          "encrypted_value": "!@ESsdD323#sdu"
+        }
+      ]
     }
   ],
   "properties": [
@@ -331,6 +351,59 @@ Expected since GoCD v17.12, you need to use `lock_behavior` rather than `enable_
   ],
   "tasks": [
     ...
+  ]
+}
+```
+
+### Artifacts
+
+There are 3 types of artifacts recognized by GoCD. `Build` and `Test` artifacts are stored on the GoCD server.
+The source and the destination of the artifact that should be stored on the GoCD server must be specified.
+
+#### Build
+
+```json
+{
+  "source": "src",
+  "destination": "dest",
+  "type": "build"
+}
+```
+
+#### Test
+
+```json
+{
+  "source": "src",
+  "destination": "dest",
+  "type": "test"
+}
+```
+
+#### External
+
+Artifacts of type `external` are stored in an artifact store outside of GoCD.
+The external artifact store's configuration must be created in the main GoCD config. Support for external artifact store config to be checked in as yaml is not available.
+The external artifact store is referenced by the `store_id`. The build specific artifact details that the artifact plugin needs to publish the artifact is provided as `configuration`.
+
+```json
+{
+  "type": "external",
+  "id": "docker-release-candidate",
+  "store_id": "dockerhub",
+  "configuration": [
+    {
+      "key": "Image",
+      "value": "gocd/gocd-demo"
+    },
+    {
+      "key": "Tag",
+      "value": "${GO_PIPELINE_COUNTER}"
+    },
+    {
+      "key": "some_secure_property",
+      "encrypted_value": "!@ESsdD323#sdu"
+    }
   ]
 }
 ```
@@ -663,9 +736,12 @@ Optionally any task can have `run_if` and `on_cancel`.
 
 ### Fetch
 
+#### Fetch artifact from the GoCD server
+
 ```json
 {
    "type": "fetch",
+   "artifact_origin": "gocd",
    "run_if": "any",
    "pipeline": "upstream",
    "stage": "upstream_stage",
@@ -673,6 +749,30 @@ Optionally any task can have `run_if` and `on_cancel`.
    "is_source_a_file": false,
    "source": "result",
    "destination": "test"
+ }
+```
+
+#### Fetch artifact from an external artifact store
+
+```json
+{
+   "type": "fetch",
+   "artifact_origin": "external",
+   "run_if": "any",
+   "pipeline": "upstream",
+   "stage": "upstream_stage",
+   "job": "upstream_job",
+   "artifact_id": "upstream_external_artifactid",
+   "configuration": [
+     {
+       "key": "DestOnAgent",
+       "value": "foo"
+     },
+     {
+       "key": "some_secure_property",
+       "encrypted_value": "ssd#%fFS*!Esx"
+     }
+   ]
  }
 ```
 
