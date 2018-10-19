@@ -29,7 +29,7 @@ Plugin jars can be downloaded from [releases page](https://github.com/tomzo/gocd
 
 There is no UI to add configuration repositories so you'll have to edit the config XML.
 You will need to add `config-repo` section within `config-repos`.
-If `config-repos` does not exist yet then you add it **above first `<pipelines />` and `<atifactStores/>`**.
+If `config-repos` does not exist yet then you add it **above first `<pipelines />` and `<artifactStores/>`**.
 
 To add all configurations from git repository `https://github.com/tomzo/gocd-json-config-example.git`
 a section like this should be added:
