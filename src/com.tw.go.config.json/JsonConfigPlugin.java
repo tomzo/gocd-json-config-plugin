@@ -61,6 +61,8 @@ public class JsonConfigPlugin implements GoPlugin {
         }
         if ("parse-directory".equals(request.requestName())) {
             return handleParseDirectoryRequest(request);
+        } else if ("pipeline-export".equals(request.requestName())) {
+            return DefaultGoPluginApiResponse.success(request.requestBody());
         }
         throw new UnhandledRequestTypeException(request.requestName());
     }
