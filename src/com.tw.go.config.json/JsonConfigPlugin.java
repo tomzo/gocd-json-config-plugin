@@ -63,6 +63,8 @@ public class JsonConfigPlugin implements GoPlugin {
             return handleParseDirectoryRequest(request);
         } else if ("pipeline-export".equals(request.requestName())) {
             return DefaultGoPluginApiResponse.success(request.requestBody());
+        } else if ("get-capabilities".equals(request.requestName())) {
+            return DefaultGoPluginApiResponse.success(gson.toJson(new Capabilities()));
         }
         throw new UnhandledRequestTypeException(request.requestName());
     }
@@ -212,7 +214,7 @@ public class JsonConfigPlugin implements GoPlugin {
     }
 
     private GoPluginIdentifier getGoPluginIdentifier() {
-        return new GoPluginIdentifier("configrepo", Arrays.asList("1.0"));
+        return new GoPluginIdentifier("configrepo", Arrays.asList("1.0", "2.0"));
     }
 
     private GoApiRequest createGoApiRequest(final String api, final String responseBody) {
@@ -224,7 +226,7 @@ public class JsonConfigPlugin implements GoPlugin {
 
             @Override
             public String apiVersion() {
-                return "1.0";
+                return "2.0";
             }
 
             @Override

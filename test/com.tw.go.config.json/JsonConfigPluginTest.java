@@ -195,16 +195,28 @@ public class JsonConfigPluginTest {
     public void shouldGiveBackPipelineJSONForPipelineExport() throws UnhandledRequestTypeException {
         String pipelineJson = "{\n" +
                 "    \"name\":\"pipeline\",\n" +
+                "    \"group\":\"group\",\n" +
                 "    \"stages\":[]\n" +
                 "}";
 
-        DefaultGoPluginApiRequest pipelineExportRequest = new DefaultGoPluginApiRequest("configrepo","1.0","pipeline-export");
+        DefaultGoPluginApiRequest pipelineExportRequest = new DefaultGoPluginApiRequest("configrepo","2.0","pipeline-export");
         pipelineExportRequest.setRequestBody(pipelineJson);
 
         GoPluginApiResponse response = plugin.handle(pipelineExportRequest);
 
         assertThat(response.responseCode(), is(DefaultGoPluginApiResponse.SUCCESS_RESPONSE_CODE));
         assertThat(response.responseBody(), is(pipelineJson));
+    }
+
+    @Test
+    public void shouldRespondWithCapabilities() throws UnhandledRequestTypeException {
+        String expected = gson.toJson(new Capabilities());
+        DefaultGoPluginApiRequest request = new DefaultGoPluginApiRequest("configrepo","2.0","get-capabilities");
+
+        GoPluginApiResponse response = plugin.handle(request);
+
+        assertThat(response.responseCode(), is(DefaultGoPluginApiResponse.SUCCESS_RESPONSE_CODE));
+        assertThat(response.responseBody(), is(expected));
     }
 
     @Test
