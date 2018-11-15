@@ -22,6 +22,12 @@ import java.util.*;
 public class JsonConfigPlugin implements GoPlugin {
 
     public static final String GET_PLUGIN_SETTINGS = "go.processor.plugin-settings.get";
+    public static final String PLUGIN_SETTINGS_GET_CONFIGURATION = "go.plugin-settings.get-configuration";
+    public static final String PLUGIN_SETTINGS_GET_VIEW = "go.plugin-settings.get-view";
+    public static final String PLUGIN_SETTINGS_VALIDATE_CONFIGURATION = "go.plugin-settings.validate-configuration";
+    public static final String PLUGIN_SETTINGS_ENVIRONMENT_PATTERN = "environment_pattern";
+    public static final String DEFAULT_ENVIRONMENT_PATTERN = "**/*.goenvironment.json";
+    public static final String DEFAULT_PIPELINE_PATTERN = "**/*.gopipeline.json";
     private static final String DISPLAY_NAME_ENVIRONMENT_PATTERN = "Go environment files pattern";
     private static final String DISPLAY_NAME_PIPELINE_PATTERN = "Go pipeline files pattern";
     private static final String PLUGIN_SETTINGS_PIPELINE_PATTERN = "pipeline_pattern";
@@ -29,14 +35,6 @@ public class JsonConfigPlugin implements GoPlugin {
     private static final String EMPTY_REQUEST_BODY_MESSAGE = "Request body cannot be null or empty";
     private static final String PLUGIN_ID = "json.config.plugin";
     private static Logger LOGGER = Logger.getLoggerFor(JsonConfigPlugin.class);
-
-    public static final String PLUGIN_SETTINGS_GET_CONFIGURATION = "go.plugin-settings.get-configuration";
-    public static final String PLUGIN_SETTINGS_GET_VIEW = "go.plugin-settings.get-view";
-    public static final String PLUGIN_SETTINGS_VALIDATE_CONFIGURATION = "go.plugin-settings.validate-configuration";
-    public static final String PLUGIN_SETTINGS_ENVIRONMENT_PATTERN = "environment_pattern";
-    public static final String DEFAULT_ENVIRONMENT_PATTERN = "**/*.goenvironment.json";
-    public static final String DEFAULT_PIPELINE_PATTERN = "**/*.gopipeline.json";
-
     private final Gson gson = new Gson();
     private GoApplicationAccessor goApplicationAccessor;
 
@@ -62,17 +60,19 @@ public class JsonConfigPlugin implements GoPlugin {
         if ("parse-directory".equals(request.requestName())) {
             return handleParseDirectoryRequest(request);
         } else if ("pipeline-export".equals(request.requestName())) {
-            return DefaultGoPluginApiResponse.success(request.requestBody());
+            return handlePipelineExportRequest(request);
         } else if ("get-capabilities".equals(request.requestName())) {
             return DefaultGoPluginApiResponse.success(gson.toJson(new Capabilities()));
         }
         throw new UnhandledRequestTypeException(request.requestName());
     }
+
     private GoPluginApiResponse handleGetPluginSettingsView() throws IOException {
         Map<String, Object> response = new HashMap<String, Object>();
         response.put("template", IOUtils.toString(getClass().getResourceAsStream("/plugin-settings.template.html"), "UTF-8"));
         return renderJSON(DefaultGoPluginApiResponse.SUCCESS_RESPONSE_CODE, response);
     }
+
     private GoPluginApiResponse handleValidatePluginSettingsConfiguration(GoPluginApiRequest goPluginApiRequest) {
         List<Map<String, Object>> response = new ArrayList<Map<String, Object>>();
         return renderJSON(DefaultGoPluginApiResponse.SUCCESS_RESPONSE_CODE, response);
@@ -84,6 +84,7 @@ public class JsonConfigPlugin implements GoPlugin {
         response.put(PLUGIN_SETTINGS_ENVIRONMENT_PATTERN, createField(DISPLAY_NAME_ENVIRONMENT_PATTERN, DEFAULT_ENVIRONMENT_PATTERN, false, false, "1"));
         return renderJSON(DefaultGoPluginApiResponse.SUCCESS_RESPONSE_CODE, response);
     }
+
     private Map<String, Object> createField(String displayName, String defaultValue, boolean isRequired, boolean isSecure, String displayOrder) {
         Map<String, Object> fieldProperties = new HashMap<String, Object>();
         fieldProperties.put("display-name", displayName);
@@ -93,47 +94,72 @@ public class JsonConfigPlugin implements GoPlugin {
         fieldProperties.put("display-order", displayOrder);
         return fieldProperties;
     }
+
     private GoPluginApiResponse renderJSON(final int responseCode, Object response) {
         final String json = response == null ? null : new GsonBuilder().create().toJson(response);
-        return new GoPluginApiResponse() {
-            @Override
-            public int responseCode() {
-                return responseCode;
+        return JsonConfigHelper.response(responseCode, json);
+    }
+
+    private GoPluginApiResponse handlePipelineExportRequest(GoPluginApiRequest request) {
+        JsonParser parser = new JsonParser();
+
+        try {
+            String requestBody = request.requestBody();
+
+            if (requestBody == null) {
+                return badRequest(EMPTY_REQUEST_BODY_MESSAGE);
             }
 
-            @Override
-            public Map<String, String> responseHeaders() {
-                return null;
+            JsonElement parsedRequest;
+            try {
+                parsedRequest = parser.parse(requestBody);
+            } catch (JsonParseException parseException) {
+                return badRequest("Request body must be valid JSON string");
             }
 
-            @Override
-            public String responseBody() {
-                return json;
+            if (parsedRequest.equals(new JsonObject())) {
+                return badRequest(EMPTY_REQUEST_BODY_MESSAGE);
             }
-        };
+
+            JsonObject requestObj = parsedRequest.getAsJsonObject();
+
+            if (!requestObj.has("pipeline")) {
+                return badRequest("`pipeline` is missing from request");
+            }
+
+            if (!requestObj.get("pipeline").isJsonObject()) {
+                return badRequest("`pipeline` key in request is not an object");
+            }
+
+            String pipeline = requestObj.get("pipeline").toString();
+            return DefaultGoPluginApiResponse.success(gson.toJson(Collections.singletonMap("pipeline", pipeline)));
+        } catch (Exception e) {
+            LOGGER.error("Unexpected error occurred while exporting pipeline.", e);
+            JsonConfigCollection config = new JsonConfigCollection();
+            config.addError(new PluginError(e.toString(), "JSON config plugin"));
+            return DefaultGoPluginApiResponse.error(gson.toJson(config.getJsonObject()));
+        }
     }
 
     private GoPluginApiResponse handleParseDirectoryRequest(GoPluginApiRequest request) {
         JsonParser jsonParser = new JsonParser();
         try {
             String requestBody = request.requestBody();
-            if(requestBody == null) {
+            if (requestBody == null) {
                 return badRequest(EMPTY_REQUEST_BODY_MESSAGE);
             }
-            JsonElement parsedResponse;
+            JsonElement parsed;
             try {
-                parsedResponse = jsonParser.parse(requestBody);
-            }
-            catch (JsonParseException parseException)
-            {
+                parsed = jsonParser.parse(requestBody);
+            } catch (JsonParseException parseException) {
                 return badRequest("Request body must be valid JSON string");
             }
-            if(parsedResponse.equals(new JsonObject())) {
+            if (parsed.equals(new JsonObject())) {
                 return badRequest(EMPTY_REQUEST_BODY_MESSAGE);
             }
-            JsonObject parsedResponseObject = parsedResponse.getAsJsonObject();
-            JsonPrimitive directoryJsonPrimitive = parsedResponseObject.getAsJsonPrimitive("directory");
-            if(directoryJsonPrimitive == null) {
+            JsonObject parsedRequest = parsed.getAsJsonObject();
+            JsonPrimitive directoryJsonPrimitive = parsedRequest.getAsJsonPrimitive("directory");
+            if (directoryJsonPrimitive == null) {
                 return badRequest(MISSING_DIRECTORY_MESSAGE);
             }
             String directory = directoryJsonPrimitive.getAsString();
@@ -150,28 +176,19 @@ public class JsonConfigPlugin implements GoPlugin {
                     DEFAULT_PIPELINE_PATTERN : settings.getPipelinePattern();
 
             ConfigDirectoryParser configDirectoryParser = new ConfigDirectoryParser(
-                    scanner,parser, pipelinePattern, environmentPattern);
+                    scanner, parser, pipelinePattern, environmentPattern);
             JsonConfigCollection config = configDirectoryParser.parseDirectory(baseDir);
 
             config.updateVersionFromPipelinesAndEnvironments();
             JsonObject responseJsonObject = config.getJsonObject();
 
             return DefaultGoPluginApiResponse.success(gson.toJson(responseJsonObject));
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             LOGGER.error("Unexpected error occurred while parsing configuration repository.", e);
             JsonConfigCollection config = new JsonConfigCollection();
-            config.addError(new PluginError(e.toString(),"JSON config plugin"));
+            config.addError(new PluginError(e.toString(), "JSON config plugin"));
             return DefaultGoPluginApiResponse.error(gson.toJson(config.getJsonObject()));
         }
-    }
-
-    private JsonArray toJsonArray(List<PluginError> errors) {
-        JsonArray jsonArray = new JsonArray();
-        for(PluginError pe : errors){
-            jsonArray.add(gson.toJsonTree(pe));
-        }
-        return jsonArray;
     }
 
     private boolean isBlank(String pattern) {
@@ -210,44 +227,10 @@ public class JsonConfigPlugin implements GoPlugin {
 
     @Override
     public GoPluginIdentifier pluginIdentifier() {
-        return getGoPluginIdentifier();
-    }
-
-    private GoPluginIdentifier getGoPluginIdentifier() {
         return new GoPluginIdentifier("configrepo", Arrays.asList("1.0", "2.0"));
     }
 
     private GoApiRequest createGoApiRequest(final String api, final String responseBody) {
-        return new GoApiRequest() {
-            @Override
-            public String api() {
-                return api;
-            }
-
-            @Override
-            public String apiVersion() {
-                return "2.0";
-            }
-
-            @Override
-            public GoPluginIdentifier pluginIdentifier() {
-                return getGoPluginIdentifier();
-            }
-
-            @Override
-            public Map<String, String> requestParameters() {
-                return null;
-            }
-
-            @Override
-            public Map<String, String> requestHeaders() {
-                return null;
-            }
-
-            @Override
-            public String requestBody() {
-                return responseBody;
-            }
-        };
+        return JsonConfigHelper.request(api, responseBody, pluginIdentifier());
     }
 }

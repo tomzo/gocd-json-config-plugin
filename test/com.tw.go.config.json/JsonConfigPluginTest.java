@@ -1,11 +1,13 @@
 package com.tw.go.config.json;
 
-import com.google.gson.*;
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.thoughtworks.go.plugin.api.GoApplicationAccessor;
 import com.thoughtworks.go.plugin.api.exceptions.UnhandledRequestTypeException;
 import com.thoughtworks.go.plugin.api.request.DefaultGoPluginApiRequest;
 import com.thoughtworks.go.plugin.api.request.GoApiRequest;
-import com.thoughtworks.go.plugin.api.request.GoPluginApiRequest;
 import com.thoughtworks.go.plugin.api.response.DefaultGoApiResponse;
 import com.thoughtworks.go.plugin.api.response.DefaultGoPluginApiResponse;
 import com.thoughtworks.go.plugin.api.response.GoApiResponse;
@@ -16,8 +18,10 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.StringReader;
+import java.util.Collections;
+import java.util.HashMap;
 
+import static java.lang.String.format;
 import static junit.framework.Assert.assertTrue;
 import static junit.framework.TestCase.assertNull;
 import static org.hamcrest.core.Is.is;
@@ -50,18 +54,16 @@ public class JsonConfigPluginTest {
 
 
     @Test
-    public void shouldRespondSuccessToGetConfigurationRequest()  throws UnhandledRequestTypeException
-    {
-        DefaultGoPluginApiRequest getConfigRequest = new DefaultGoPluginApiRequest("configrepo","1.0","go.plugin-settings.get-configuration");
+    public void shouldRespondSuccessToGetConfigurationRequest() throws UnhandledRequestTypeException {
+        DefaultGoPluginApiRequest getConfigRequest = new DefaultGoPluginApiRequest("configrepo", "1.0", "go.plugin-settings.get-configuration");
 
         GoPluginApiResponse response = plugin.handle(getConfigRequest);
         assertThat(response.responseCode(), is(DefaultGoPluginApiResponse.SUCCESS_RESPONSE_CODE));
     }
 
     @Test
-    public void shouldContainEnvironmentPatternInResponseToGetConfigurationRequest()  throws UnhandledRequestTypeException
-    {
-        DefaultGoPluginApiRequest getConfigRequest = new DefaultGoPluginApiRequest("configrepo","1.0","go.plugin-settings.get-configuration");
+    public void shouldContainEnvironmentPatternInResponseToGetConfigurationRequest() throws UnhandledRequestTypeException {
+        DefaultGoPluginApiRequest getConfigRequest = new DefaultGoPluginApiRequest("configrepo", "1.0", "go.plugin-settings.get-configuration");
 
         GoPluginApiResponse response = plugin.handle(getConfigRequest);
         assertThat(response.responseCode(), is(DefaultGoPluginApiResponse.SUCCESS_RESPONSE_CODE));
@@ -70,15 +72,15 @@ public class JsonConfigPluginTest {
         assertNotNull(environmentPatternConfig);
         JsonObject environmentPatternConfigAsJsonObject = environmentPatternConfig.getAsJsonObject();
         assertThat(environmentPatternConfigAsJsonObject.get("display-name").getAsString(), is("Go environment files pattern"));
-        assertThat(environmentPatternConfigAsJsonObject.get("default-value").getAsString(),is("**/*.goenvironment.json"));
-        assertThat(environmentPatternConfigAsJsonObject.get("required").getAsBoolean(),is(false));
-        assertThat(environmentPatternConfigAsJsonObject.get("secure").getAsBoolean(),is(false));
-        assertThat(environmentPatternConfigAsJsonObject.get("display-order").getAsInt(),is(1));
+        assertThat(environmentPatternConfigAsJsonObject.get("default-value").getAsString(), is("**/*.goenvironment.json"));
+        assertThat(environmentPatternConfigAsJsonObject.get("required").getAsBoolean(), is(false));
+        assertThat(environmentPatternConfigAsJsonObject.get("secure").getAsBoolean(), is(false));
+        assertThat(environmentPatternConfigAsJsonObject.get("display-order").getAsInt(), is(1));
     }
+
     @Test
-    public void shouldContainPipelinePatternInResponseToGetConfigurationRequest()  throws UnhandledRequestTypeException
-    {
-        DefaultGoPluginApiRequest getConfigRequest = new DefaultGoPluginApiRequest("configrepo","1.0","go.plugin-settings.get-configuration");
+    public void shouldContainPipelinePatternInResponseToGetConfigurationRequest() throws UnhandledRequestTypeException {
+        DefaultGoPluginApiRequest getConfigRequest = new DefaultGoPluginApiRequest("configrepo", "1.0", "go.plugin-settings.get-configuration");
 
         GoPluginApiResponse response = plugin.handle(getConfigRequest);
         assertThat(response.responseCode(), is(DefaultGoPluginApiResponse.SUCCESS_RESPONSE_CODE));
@@ -87,10 +89,10 @@ public class JsonConfigPluginTest {
         assertNotNull(pipelinePatternConfig);
         JsonObject pipelinePatternConfigAsJsonObject = pipelinePatternConfig.getAsJsonObject();
         assertThat(pipelinePatternConfigAsJsonObject.get("display-name").getAsString(), is("Go pipeline files pattern"));
-        assertThat(pipelinePatternConfigAsJsonObject.get("default-value").getAsString(),is("**/*.gopipeline.json"));
-        assertThat(pipelinePatternConfigAsJsonObject.get("required").getAsBoolean(),is(false));
-        assertThat(pipelinePatternConfigAsJsonObject.get("secure").getAsBoolean(),is(false));
-        assertThat(pipelinePatternConfigAsJsonObject.get("display-order").getAsInt(),is(0));
+        assertThat(pipelinePatternConfigAsJsonObject.get("default-value").getAsString(), is("**/*.gopipeline.json"));
+        assertThat(pipelinePatternConfigAsJsonObject.get("required").getAsBoolean(), is(false));
+        assertThat(pipelinePatternConfigAsJsonObject.get("secure").getAsBoolean(), is(false));
+        assertThat(pipelinePatternConfigAsJsonObject.get("display-order").getAsInt(), is(0));
     }
 
     private JsonObject getJsonObjectFromResponse(GoPluginApiResponse response) {
@@ -99,27 +101,24 @@ public class JsonConfigPluginTest {
     }
 
     @Test
-    public void shouldRespondSuccessToGetViewRequest() throws UnhandledRequestTypeException
-    {
-        DefaultGoPluginApiRequest getConfigRequest = new DefaultGoPluginApiRequest("configrepo","1.0","go.plugin-settings.get-view");
+    public void shouldRespondSuccessToGetViewRequest() throws UnhandledRequestTypeException {
+        DefaultGoPluginApiRequest getConfigRequest = new DefaultGoPluginApiRequest("configrepo", "1.0", "go.plugin-settings.get-view");
 
         GoPluginApiResponse response = plugin.handle(getConfigRequest);
         assertThat(response.responseCode(), is(DefaultGoPluginApiResponse.SUCCESS_RESPONSE_CODE));
     }
 
     @Test
-    public void shouldRespondSuccessToValidateConfigRequest() throws UnhandledRequestTypeException
-    {
-        DefaultGoPluginApiRequest validateRequest = new DefaultGoPluginApiRequest("configrepo","1.0","go.plugin-settings.validate-configuration");
+    public void shouldRespondSuccessToValidateConfigRequest() throws UnhandledRequestTypeException {
+        DefaultGoPluginApiRequest validateRequest = new DefaultGoPluginApiRequest("configrepo", "1.0", "go.plugin-settings.validate-configuration");
 
         GoPluginApiResponse response = plugin.handle(validateRequest);
         assertThat(response.responseCode(), is(DefaultGoPluginApiResponse.SUCCESS_RESPONSE_CODE));
     }
 
     @Test
-    public void shouldRespondSuccessToParseDirectoryRequestWhenEmpty() throws UnhandledRequestTypeException
-    {
-        DefaultGoPluginApiRequest parseDirectoryRequest = new DefaultGoPluginApiRequest("configrepo","1.0","parse-directory");
+    public void shouldRespondSuccessToParseDirectoryRequestWhenEmpty() throws UnhandledRequestTypeException {
+        DefaultGoPluginApiRequest parseDirectoryRequest = new DefaultGoPluginApiRequest("configrepo", "1.0", "parse-directory");
         String requestBody = "{\n" +
                 "    \"directory\":\"emptyDir\",\n" +
                 "    \"configurations\":[]\n" +
@@ -133,9 +132,8 @@ public class JsonConfigPluginTest {
     }
 
     @Test
-    public void shouldRespondBadRequestToParseDirectoryRequestWhenDirectoryIsNotSpecified() throws UnhandledRequestTypeException
-    {
-        DefaultGoPluginApiRequest parseDirectoryRequest = new DefaultGoPluginApiRequest("configrepo","1.0","parse-directory");
+    public void shouldRespondBadRequestToParseDirectoryRequestWhenDirectoryIsNotSpecified() throws UnhandledRequestTypeException {
+        DefaultGoPluginApiRequest parseDirectoryRequest = new DefaultGoPluginApiRequest("configrepo", "1.0", "parse-directory");
         String requestBody = "{\n" +
                 "    \"configurations\":[]\n" +
                 "}";
@@ -144,30 +142,30 @@ public class JsonConfigPluginTest {
         GoPluginApiResponse response = plugin.handle(parseDirectoryRequest);
         assertThat(response.responseCode(), is(DefaultGoPluginApiResponse.BAD_REQUEST));
     }
+
     @Test
-    public void shouldRespondBadRequestToParseDirectoryRequestWhenRequestBodyIsNull() throws UnhandledRequestTypeException
-    {
-        DefaultGoPluginApiRequest parseDirectoryRequest = new DefaultGoPluginApiRequest("configrepo","1.0","parse-directory");
+    public void shouldRespondBadRequestToParseDirectoryRequestWhenRequestBodyIsNull() throws UnhandledRequestTypeException {
+        DefaultGoPluginApiRequest parseDirectoryRequest = new DefaultGoPluginApiRequest("configrepo", "1.0", "parse-directory");
         String requestBody = null;
         parseDirectoryRequest.setRequestBody(requestBody);
 
         GoPluginApiResponse response = plugin.handle(parseDirectoryRequest);
         assertThat(response.responseCode(), is(DefaultGoPluginApiResponse.BAD_REQUEST));
     }
+
     @Test
-    public void shouldRespondBadRequestToParseDirectoryRequestWhenRequestBodyIsEmpty() throws UnhandledRequestTypeException
-    {
-        DefaultGoPluginApiRequest parseDirectoryRequest = new DefaultGoPluginApiRequest("configrepo","1.0","parse-directory");
+    public void shouldRespondBadRequestToParseDirectoryRequestWhenRequestBodyIsEmpty() throws UnhandledRequestTypeException {
+        DefaultGoPluginApiRequest parseDirectoryRequest = new DefaultGoPluginApiRequest("configrepo", "1.0", "parse-directory");
         String requestBody = null;
         parseDirectoryRequest.setRequestBody("{}");
 
         GoPluginApiResponse response = plugin.handle(parseDirectoryRequest);
         assertThat(response.responseCode(), is(DefaultGoPluginApiResponse.BAD_REQUEST));
     }
+
     @Test
-    public void shouldRespondBadRequestToParseDirectoryRequestWhenRequestBodyIsNotJson() throws UnhandledRequestTypeException
-    {
-        DefaultGoPluginApiRequest parseDirectoryRequest = new DefaultGoPluginApiRequest("configrepo","1.0","parse-directory");
+    public void shouldRespondBadRequestToParseDirectoryRequestWhenRequestBodyIsNotJson() throws UnhandledRequestTypeException {
+        DefaultGoPluginApiRequest parseDirectoryRequest = new DefaultGoPluginApiRequest("configrepo", "1.0", "parse-directory");
         String requestBody = null;
         parseDirectoryRequest.setRequestBody("{bla");
 
@@ -176,9 +174,8 @@ public class JsonConfigPluginTest {
     }
 
     @Test
-    public void shouldTalkToGoApplicationAccessorToGetPluginSettings() throws UnhandledRequestTypeException
-    {
-        DefaultGoPluginApiRequest parseDirectoryRequest = new DefaultGoPluginApiRequest("configrepo","1.0","parse-directory");
+    public void shouldTalkToGoApplicationAccessorToGetPluginSettings() throws UnhandledRequestTypeException {
+        DefaultGoPluginApiRequest parseDirectoryRequest = new DefaultGoPluginApiRequest("configrepo", "1.0", "parse-directory");
         String requestBody = "{\n" +
                 "    \"directory\":\"emptyDir\",\n" +
                 "    \"configurations\":[]\n" +
@@ -187,31 +184,34 @@ public class JsonConfigPluginTest {
 
         GoPluginApiResponse response = plugin.handle(parseDirectoryRequest);
 
-        verify(goAccessor,times(1)).submit(any(GoApiRequest.class));
+        verify(goAccessor, times(1)).submit(any(GoApiRequest.class));
         assertThat(response.responseCode(), is(DefaultGoPluginApiResponse.SUCCESS_RESPONSE_CODE));
     }
 
     @Test
     public void shouldGiveBackPipelineJSONForPipelineExport() throws UnhandledRequestTypeException {
-        String pipelineJson = "{\n" +
-                "    \"name\":\"pipeline\",\n" +
-                "    \"group\":\"group\",\n" +
-                "    \"stages\":[]\n" +
-                "}";
+        HashMap<String, Object> pipeline = new HashMap<String, Object>();
+        pipeline.put("name", "pipeline");
+        pipeline.put("group", "group");
+        pipeline.put("stages", Collections.emptyList());
 
-        DefaultGoPluginApiRequest pipelineExportRequest = new DefaultGoPluginApiRequest("configrepo","2.0","pipeline-export");
-        pipelineExportRequest.setRequestBody(pipelineJson);
+        Gson gson = new Gson();
+        String pipelineJson = gson.toJson(pipeline);
+
+        String requestJson = format("{\"pipeline\": %s}", pipelineJson);
+        DefaultGoPluginApiRequest pipelineExportRequest = new DefaultGoPluginApiRequest("configrepo", "2.0", "pipeline-export");
+        pipelineExportRequest.setRequestBody(requestJson);
 
         GoPluginApiResponse response = plugin.handle(pipelineExportRequest);
 
         assertThat(response.responseCode(), is(DefaultGoPluginApiResponse.SUCCESS_RESPONSE_CODE));
-        assertThat(response.responseBody(), is(pipelineJson));
+        assertThat(response.responseBody(), is(gson.toJson(Collections.singletonMap("pipeline", pipelineJson))));
     }
 
     @Test
     public void shouldRespondWithCapabilities() throws UnhandledRequestTypeException {
         String expected = gson.toJson(new Capabilities());
-        DefaultGoPluginApiRequest request = new DefaultGoPluginApiRequest("configrepo","2.0","get-capabilities");
+        DefaultGoPluginApiRequest request = new DefaultGoPluginApiRequest("configrepo", "2.0", "get-capabilities");
 
         GoPluginApiResponse response = plugin.handle(request);
 
@@ -220,12 +220,11 @@ public class JsonConfigPluginTest {
     }
 
     @Test
-    public void shouldRespondSuccessToParseDirectoryRequestWhenPluginHasConfiguration() throws UnhandledRequestTypeException
-    {
+    public void shouldRespondSuccessToParseDirectoryRequestWhenPluginHasConfiguration() throws UnhandledRequestTypeException {
         GoApiResponse settingsResponse = DefaultGoApiResponse.success("{}");
         when(goAccessor.submit(any(GoApiRequest.class))).thenReturn(settingsResponse);
 
-        DefaultGoPluginApiRequest parseDirectoryRequest = new DefaultGoPluginApiRequest("configrepo","1.0","parse-directory");
+        DefaultGoPluginApiRequest parseDirectoryRequest = new DefaultGoPluginApiRequest("configrepo", "1.0", "parse-directory");
         String requestBody = "{\n" +
                 "    \"directory\":\"emptyDir\",\n" +
                 "    \"configurations\":[]\n" +
@@ -234,17 +233,16 @@ public class JsonConfigPluginTest {
 
         GoPluginApiResponse response = plugin.handle(parseDirectoryRequest);
 
-        verify(goAccessor,times(1)).submit(any(GoApiRequest.class));
+        verify(goAccessor, times(1)).submit(any(GoApiRequest.class));
         assertThat(response.responseCode(), is(DefaultGoPluginApiResponse.SUCCESS_RESPONSE_CODE));
     }
 
     @Test
-    public void shouldContainValidFieldsInResponseMessage() throws UnhandledRequestTypeException
-    {
+    public void shouldContainValidFieldsInResponseMessage() throws UnhandledRequestTypeException {
         GoApiResponse settingsResponse = DefaultGoApiResponse.success("{}");
         when(goAccessor.submit(any(GoApiRequest.class))).thenReturn(settingsResponse);
 
-        DefaultGoPluginApiRequest parseDirectoryRequest = new DefaultGoPluginApiRequest("configrepo","1.0","parse-directory");
+        DefaultGoPluginApiRequest parseDirectoryRequest = new DefaultGoPluginApiRequest("configrepo", "1.0", "parse-directory");
         String requestBody = "{\n" +
                 "    \"directory\":\"emptyDir\",\n" +
                 "    \"configurations\":[]\n" +

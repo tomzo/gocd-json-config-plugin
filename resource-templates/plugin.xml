@@ -2,8 +2,8 @@
 <go-plugin id="json.config.plugin" version="1">
     <about>
         <name>JSON Configuration Plugin</name>
-        <version>PLUGIN_VERSION_NUMBER</version>
-        <target-go-version>GO_TARGET_VERSION_NUMBER</target-go-version>
+        <version>${version}</version>
+        <target-go-version>${goCdVersion}</target-go-version>
         <description>
             Configuration plugin that supports GoCD configuration in JSON
         </description>
