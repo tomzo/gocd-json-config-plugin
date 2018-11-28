@@ -36,6 +36,7 @@ public class JsonConfigPlugin implements GoPlugin {
     private static final String PLUGIN_ID = "json.config.plugin";
     private static Logger LOGGER = Logger.getLoggerFor(JsonConfigPlugin.class);
     private final Gson gson = new Gson();
+    private final Gson prettyPrint = new GsonBuilder().setPrettyPrinting().create();
     private GoApplicationAccessor goApplicationAccessor;
 
     @Override
@@ -131,7 +132,7 @@ public class JsonConfigPlugin implements GoPlugin {
                 return badRequest("`pipeline` key in request is not an object");
             }
 
-            String pipeline = requestObj.get("pipeline").toString();
+            String pipeline = prettyPrint.toJson(requestObj.get("pipeline"));
             return DefaultGoPluginApiResponse.success(gson.toJson(Collections.singletonMap("pipeline", pipeline)));
         } catch (Exception e) {
             LOGGER.error("Unexpected error occurred while exporting pipeline.", e);

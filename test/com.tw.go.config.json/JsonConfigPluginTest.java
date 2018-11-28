@@ -1,9 +1,6 @@
 package com.tw.go.config.json;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.google.gson.*;
 import com.thoughtworks.go.plugin.api.GoApplicationAccessor;
 import com.thoughtworks.go.plugin.api.exceptions.UnhandledRequestTypeException;
 import com.thoughtworks.go.plugin.api.request.DefaultGoPluginApiRequest;
@@ -205,7 +202,9 @@ public class JsonConfigPluginTest {
         GoPluginApiResponse response = plugin.handle(pipelineExportRequest);
 
         assertThat(response.responseCode(), is(DefaultGoPluginApiResponse.SUCCESS_RESPONSE_CODE));
-        assertThat(response.responseBody(), is(gson.toJson(Collections.singletonMap("pipeline", pipelineJson))));
+        Gson pretty = new GsonBuilder().setPrettyPrinting().create();
+        String prettyPrinted = pretty.toJson(pipeline);
+        assertThat(response.responseBody(), is(gson.toJson(Collections.singletonMap("pipeline", prettyPrinted))));
     }
 
     @Test
