@@ -138,9 +138,13 @@ public class JsonConfigPlugin implements GoPlugin, ConfigRepoMessages {
             ParsedRequest parsed = ParsedRequest.parse(request);
 
             Map<String, Object> pipeline = parsed.getParam("pipeline");
+            String name = (String) pipeline.get("name");
 
-            return success(gson.toJson(Collections.singletonMap("pipeline", prettyPrint.toJson(pipeline))));
+            DefaultGoPluginApiResponse response = success(gson.toJson(Collections.singletonMap("pipeline", prettyPrint.toJson(pipeline))));
 
+            response.addResponseHeader("Content-Type", "application/json; charset=utf-8");
+            response.addResponseHeader("X-Export-Filename", name + ".gopipeline.json");
+            return response;
         });
     }
 
