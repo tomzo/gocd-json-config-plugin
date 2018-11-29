@@ -2,13 +2,14 @@ package com.tw.go.config.json;
 
 
 import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
 
-public class JSONUtils {
-    public static Object fromJSON(String json) {
-        return new GsonBuilder().create().fromJson(json, Object.class);
+class JSONUtils {
+    static <T> T fromJSON(String json) {
+        return new GsonBuilder().create().fromJson(json, new TypeToken<T>() {}.getType());
     }
 
-    public static String toJSON(Object object) {
+    static String toJSON(Object object) {
         return new GsonBuilder().create().toJson(object);
     }
 }

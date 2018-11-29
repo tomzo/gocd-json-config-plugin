@@ -4,20 +4,20 @@ import com.google.gson.JsonElement;
 
 import java.io.File;
 
-public class ConfigDirectoryParser {
+class ConfigDirectoryParser {
     private ConfigDirectoryScanner scanner;
     private JsonFileParser parser;
     private String pipelinePattern;
     private String environmentPattern;
 
-    public ConfigDirectoryParser(ConfigDirectoryScanner scanner, JsonFileParser parser, String pipelinePattern, String environmentPattern) {
+    ConfigDirectoryParser(ConfigDirectoryScanner scanner, JsonFileParser parser, String pipelinePattern, String environmentPattern) {
         this.scanner = scanner;
         this.parser = parser;
         this.pipelinePattern = pipelinePattern;
         this.environmentPattern = environmentPattern;
     }
 
-    public JsonConfigCollection parseDirectory(File baseDir) throws Exception {
+    JsonConfigCollection parseDirectory(File baseDir) {
         JsonConfigCollection config = new JsonConfigCollection();
         for (String environmentFile : scanner.getFilesMatchingPattern(baseDir, environmentPattern)) {
             JsonElement environment = JsonFileParser.processFile(config, parser, new File(baseDir, environmentFile));

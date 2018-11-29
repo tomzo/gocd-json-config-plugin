@@ -42,7 +42,6 @@ public class JsonConfigHelper {
                 return responseBody;
             }
         };
-
     }
 
     static GoPluginApiResponse response(final int responseCode, final String json) {

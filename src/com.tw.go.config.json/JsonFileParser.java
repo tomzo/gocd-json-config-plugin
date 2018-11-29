@@ -6,6 +6,7 @@ import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 
 import static java.lang.String.format;
@@ -18,7 +19,7 @@ public class JsonFileParser {
         parser = new JsonParser();
     }
 
-    public static JsonElement processFile(JsonConfigCollection result, JsonFileParser parser, File file) throws Exception {
+    public static JsonElement processFile(JsonConfigCollection result, JsonFileParser parser, File file) {
         try {
             JsonElement el = parser.parseFile(file);
 
@@ -31,7 +32,7 @@ public class JsonFileParser {
             } else {
                 return el;
             }
-        } catch (JsonParseException e) {
+        } catch (FileNotFoundException | JsonParseException e) {
             PluginError error = new PluginError(format("Failed to parse file as JSON: %s", e.getMessage()), file.getPath());
             result.addError(error);
         }
@@ -39,7 +40,7 @@ public class JsonFileParser {
         return null;
     }
 
-    public JsonElement parseFile(File path) throws Exception {
+    private JsonElement parseFile(File path) throws FileNotFoundException {
         final FileReader reader = new FileReader(path);
         return parser.parse(reader);
     }
