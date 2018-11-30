@@ -2,6 +2,8 @@
 
 # GoCD JSON configuration plugin
 
+[![Build Status](https://travis-ci.com/tomzo/gocd-json-config-plugin.svg?branch=master)](https://travis-ci.com/tomzo/gocd-json-config-plugin)
+
 **GoCD pipeline configuration as code**
 
 This is a [GoCD](https://www.gocd.org) server plugin which allows to keep **pipelines** and **environments** configuration
