@@ -78,6 +78,56 @@ Currently it is recommended to declare consistent version in all your files:
 }
 ```
 
+# Syntax checking
+
+Since `0.3.1` plugin is an executable and supports basic syntax checking.
+
+## Usage with java installed
+
+You need to download the `jar` from releases page and place it somewhere convenient.
+For example `/usr/lib/gocd-json-plugin/json-config-plugin.jar`.
+Then to validate your `gopipeline.json` file run something like:
+```
+java -jar /usr/lib/gocd-json-plugin/json-config-plugin.jar syntax mypipe.gopipeline.json
+```
+
+## Usage with IDE and docker
+
+[IDE](https://github.com/ai-traders/ide) is a bash script, a cli wrapper around docker to help with running development tasks in docker.
+You can install the `ide` script so that it is available on the PATH with:
+```
+sudo bash -c "`curl -L https://raw.githubusercontent.com/ai-traders/ide/master/install.sh`"
+```
+
+Add `Idefile` in your project with following content
+```
+IDE_DOCKER_IMAGE=tomzo/gocd-json-ide:0.3.1
+```
+
+To validate files run:
+```
+ide gocd-json syntax mypipe.gopipeline.json
+```
+
+Personally, I recommend the following project structure:
+
+ * `gocd/` directory for all your GoCD configuration files.
+ * `gocd/Idefile` file pointing which docker image can be used to validate configuration.
+
+Then when working with gocd pipelines config, you can run from the root of your project
+```
+cd gocd
+ide      # will open interactive shell
+watch gocd-json syntax mypipe.gopipeline.json
+```
+
+## Usage with docker only
+
+```
+docker run -ti --rm --volume $(pwd):/ide/work tomzo/gocd-json-ide:0.3.1 bash
+```
+Then you have an interactive shell as above.
+
 #### Implementation note
 
 This plugin leverages JSON message format used internally for GoCD server
