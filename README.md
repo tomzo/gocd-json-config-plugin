@@ -538,7 +538,8 @@ All scm materials can have filter object:
   "destination": "dir1",
   "auto_update": false,
   "name": "gitMaterial1",
-  "type": "git"
+  "type": "git",
+  "shallow_clone": true
 }
 ```
 
