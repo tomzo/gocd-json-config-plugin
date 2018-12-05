@@ -1,4 +1,4 @@
-# 0.3.1 - Unreleased
+# 0.3.1 (Dec 5 2018)
 
 Adds CLI to validate local files.
 
