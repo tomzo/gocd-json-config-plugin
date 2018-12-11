@@ -3,14 +3,16 @@ package com.tw.go.config.json;
 import com.google.gson.JsonElement;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 
 class ConfigDirectoryParser {
     private ConfigDirectoryScanner scanner;
-    private JsonFileParser parser;
+    private JsonConfigParser parser;
     private String pipelinePattern;
     private String environmentPattern;
 
-    ConfigDirectoryParser(ConfigDirectoryScanner scanner, JsonFileParser parser, String pipelinePattern, String environmentPattern) {
+    ConfigDirectoryParser(ConfigDirectoryScanner scanner, JsonConfigParser parser, String pipelinePattern, String environmentPattern) {
         this.scanner = scanner;
         this.parser = parser;
         this.pipelinePattern = pipelinePattern;
@@ -19,18 +21,26 @@ class ConfigDirectoryParser {
 
     JsonConfigCollection parseDirectory(File baseDir) {
         JsonConfigCollection config = new JsonConfigCollection();
-        for (String environmentFile : scanner.getFilesMatchingPattern(baseDir, environmentPattern)) {
-            JsonElement environment = JsonFileParser.processFile(config, parser, new File(baseDir, environmentFile));
-            if (null != environment) {
-                config.addEnvironment(environment, environmentFile);
-            }
-        }
+        File currentFile;
 
-        for (String pipelineFile : scanner.getFilesMatchingPattern(baseDir, pipelinePattern)) {
-            JsonElement pipeline = JsonFileParser.processFile(config, parser, new File(baseDir, pipelineFile));
-            if (null != pipeline) {
-                config.addPipeline(pipeline, pipelineFile);
+        try {
+            for (String environmentFile : scanner.getFilesMatchingPattern(baseDir, environmentPattern)) {
+                currentFile = new File(baseDir, environmentFile);
+                JsonElement environment = JsonConfigParser.parseStream(config, parser, new FileInputStream(currentFile), currentFile.getPath());
+                if (null != environment) {
+                    config.addEnvironment(environment, environmentFile);
+                }
             }
+
+            for (String pipelineFile : scanner.getFilesMatchingPattern(baseDir, pipelinePattern)) {
+                currentFile = new File(baseDir, pipelineFile);
+                JsonElement pipeline = JsonConfigParser.parseStream(config, parser, new FileInputStream(currentFile), currentFile.getPath());
+                if (null != pipeline) {
+                    config.addPipeline(pipeline, pipelineFile);
+                }
+            }
+        } catch (FileNotFoundException e) {
+            config.addError(new PluginError(e.getMessage()));
         }
 
         return config;

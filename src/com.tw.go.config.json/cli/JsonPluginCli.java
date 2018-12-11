@@ -4,10 +4,13 @@ import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
 import com.google.gson.JsonObject;
 import com.tw.go.config.json.JsonConfigCollection;
-import com.tw.go.config.json.JsonFileParser;
+import com.tw.go.config.json.JsonConfigParser;
 import com.tw.go.config.json.PluginError;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 
 import static java.lang.String.format;
 
@@ -44,22 +47,36 @@ public class JsonPluginCli {
         JsonConfigCollection collection = new JsonConfigCollection();
         JsonObject result = collection.getJsonObject();
 
-        File file = new File(syntax.file);
+        String location = getLocation(syntax.file);
 
         try {
-            JsonFileParser.processFile(collection, new JsonFileParser(), file);
+            JsonConfigParser.parseStream(collection, getFileAsStream(syntax.file), location);
         } catch (Exception e) {
-            collection.addError(new PluginError(e.getMessage(), file.getAbsolutePath()));
+            collection.addError(new PluginError(e.getMessage(), location));
         }
 
         result.remove("environments");
         result.remove("pipelines");
 
         if (collection.getErrors().size() > 0) {
-            die(syntax.quiet, 1, result.toString());
+            die(1, result.toString());
         } else {
-            die(syntax.quiet, 0, "OK");
+            die(0, "OK");
         }
+    }
+
+    private static String getLocation(String file) {
+        return "-".equals(file) ? "<STDIN>" : file;
+    }
+
+    private static InputStream getFileAsStream(String file) {
+        InputStream s = null;
+        try {
+            s = "-".equals(file) ? System.in : new FileInputStream(new File(".", file));
+        } catch (FileNotFoundException e) {
+            die(1, e.getMessage());
+        }
+        return s;
     }
 
     private static void echo(String message, Object... items) {
@@ -77,13 +94,6 @@ public class JsonPluginCli {
             echo(message, items);
         }
         System.exit(exitCode);
-    }
-
-    private static void die(boolean quietly, int exitCode, String message, Object... items) {
-        if (quietly) {
-            System.exit(exitCode);
-        }
-        die(exitCode, message, items);
     }
 
     private static void printUsageAndExit(int exitCode, JCommander cmd, String command) {
