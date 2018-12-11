@@ -91,6 +91,28 @@ Then to validate your `gopipeline.json` file run something like:
 java -jar /usr/lib/gocd-json-plugin/json-config-plugin.jar syntax mypipe.gopipeline.json
 ```
 
+## Usage with `gocd` command-line helper
+
+This is a product in development, so its command syntax is not stable and there are no distributed binaries yet.
+
+The `gocd` tool is built in [golang](https://golang.org/) so you will need to familiarize yourself with how to set up your [go workspace](https://golang.org/doc/code.html#Workspaces).
+
+Build the `gocd` binary:
+
+```bash
+go get github.com/gocd-contrib/gocd-cli
+cd ${GOPATH:-~/go}/src/github.com/gocd-contrib/gocd-cli
+./build.sh
+```
+
+Follow the steps on [https://github.com/gocd-contrib/gocd-cli](https://github.com/gocd-contrib/gocd-cli) to install the plugin jar to the correct place.
+
+Then:
+
+```bash
+./gocd configrepo check -i json.config.plugin /path/to/your-pipeline.gopipeline.json
+```
+
 ## Usage with IDE and docker
 
 [IDE](https://github.com/ai-traders/ide) is a bash script, a cli wrapper around docker to help with running development tasks in docker.
@@ -746,7 +768,7 @@ Optionally any task can have `run_if` and `on_cancel`.
       "docs",
       "install"
     ],
-    "working_directory": null      
+    "working_directory": null
 }
 ```
 
