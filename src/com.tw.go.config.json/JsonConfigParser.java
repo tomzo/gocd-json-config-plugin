@@ -26,6 +26,11 @@ public class JsonConfigParser {
 
     public static JsonElement parseStream(JsonConfigCollection result, JsonConfigParser parser, InputStream input, String location) {
         try (InputStreamReader contentReader = new InputStreamReader(input)) {
+            if (input.available() < 1) {
+                result.addError(new PluginError("File is empty", location));
+                return null;
+            }
+
             JsonElement el = parser.parse(contentReader);
 
             if (el == null || el.isJsonNull()) {
