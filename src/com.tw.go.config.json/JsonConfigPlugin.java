@@ -115,7 +115,7 @@ public class JsonConfigPlugin implements GoPlugin, ConfigRepoMessages {
             ParsedRequest parsed = ParsedRequest.parse(request);
             File baseDir = new File(parsed.getStringParam("directory"));
 
-            JsonFileParser parser = new JsonFileParser();
+            JsonConfigParser parser = new JsonConfigParser();
             PluginSettings settings = getPluginSettings();
             ConfigDirectoryScanner scanner = new AntDirectoryScanner();
 

@@ -28,7 +28,7 @@ public class ConfigDirectoryParserTest {
         FileUtils.deleteDirectory(directory);
 
         parser = new ConfigDirectoryParser(
-                new AntDirectoryScanner(), new JsonFileParser(),
+                new AntDirectoryScanner(), new JsonConfigParser(),
                 JsonConfigPlugin.DEFAULT_PIPELINE_PATTERN,
                 JsonConfigPlugin.DEFAULT_ENVIRONMENT_PATTERN);
 
