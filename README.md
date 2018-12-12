@@ -80,7 +80,7 @@ Currently it is recommended to declare consistent version in all your files:
 
 # Syntax checking
 
-Since `0.3.1` plugin is an executable and supports basic syntax checking.
+Since `0.3.2` plugin is an executable and supports basic syntax checking.
 
 ## Usage with java installed
 
@@ -123,7 +123,7 @@ sudo bash -c "`curl -L https://raw.githubusercontent.com/ai-traders/ide/master/i
 
 Add `Idefile` in your project with following content
 ```
-IDE_DOCKER_IMAGE=tomzo/gocd-json-ide:0.3.1
+IDE_DOCKER_IMAGE=tomzo/gocd-json-ide:0.3.2
 ```
 
 To validate files run:
@@ -146,7 +146,7 @@ watch gocd-json syntax mypipe.gopipeline.json
 ## Usage with docker only
 
 ```
-docker run -ti --rm --volume $(pwd):/ide/work tomzo/gocd-json-ide:0.3.1 bash
+docker run -ti --rm --volume $(pwd):/ide/work tomzo/gocd-json-ide:0.3.2 bash
 ```
 Then you have an interactive shell as above.
 

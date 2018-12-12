@@ -1,3 +1,7 @@
+# 0.3.2 (Dec 10 2018)
+
+Accept stdin input in CLI tool
+
 # 0.3.1 (Dec 5 2018)
 
 Adds CLI to validate local files.
