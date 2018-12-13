@@ -72,7 +72,7 @@ public class JsonPluginCli {
     private static InputStream getFileAsStream(String file) {
         InputStream s = null;
         try {
-            s = "-".equals(file) ? System.in : new FileInputStream(new File(".", file));
+            s = "-".equals(file) ? System.in : new FileInputStream(new File(file));
         } catch (FileNotFoundException e) {
             die(1, e.getMessage());
         }
