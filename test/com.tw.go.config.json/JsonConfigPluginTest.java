@@ -18,8 +18,11 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 
+import static com.thoughtworks.go.plugin.api.response.DefaultGoPluginApiResponse.SUCCESS_RESPONSE_CODE;
+import static com.tw.go.config.json.ConfigRepoMessages.REQ_PARSE_CONTENT;
 import static java.lang.String.format;
 import static junit.framework.Assert.assertTrue;
+import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertNull;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertNotNull;
@@ -49,13 +52,38 @@ public class JsonConfigPluginTest {
         FileUtils.forceMkdir(emptyDir);
     }
 
+    @Test
+    public void respondsToParseContentRequest() throws Exception {
+        final Gson gson = new Gson();
+        DefaultGoPluginApiRequest request = new DefaultGoPluginApiRequest("configrepo", "2.0", REQ_PARSE_CONTENT);
+        request.setRequestBody(gson.toJson(Collections.singletonMap("content", "{\"name\": \"a\", \"stages\":[]}")));
+        GoPluginApiResponse response = plugin.handle(request);
+        JsonObject jsonObjectFromResponse = getJsonObjectFromResponse(response);
+        assertEquals(SUCCESS_RESPONSE_CODE, response.responseCode());
+        assertEquals(new JsonArray(), jsonObjectFromResponse.get("errors"));
+
+        JsonObject expected = new JsonObject();
+
+        JsonArray pipelines = new JsonArray();
+        expected.add("errors", new JsonArray());
+        expected.add("environments", new JsonArray());
+        expected.add("pipelines", pipelines);
+        expected.addProperty("target_version", 1);
+        JsonObject p1 = new JsonObject();
+        p1.addProperty("name", "a");
+        p1.add("stages", new JsonArray());
+        p1.addProperty("location", "content");
+        pipelines.add(p1);
+
+        assertEquals(expected, jsonObjectFromResponse);
+    }
 
     @Test
     public void shouldRespondSuccessToGetConfigurationRequest() throws UnhandledRequestTypeException {
         DefaultGoPluginApiRequest getConfigRequest = new DefaultGoPluginApiRequest("configrepo", "1.0", "go.plugin-settings.get-configuration");
 
         GoPluginApiResponse response = plugin.handle(getConfigRequest);
-        assertThat(response.responseCode(), is(DefaultGoPluginApiResponse.SUCCESS_RESPONSE_CODE));
+        assertThat(response.responseCode(), is(SUCCESS_RESPONSE_CODE));
     }
 
     @Test
@@ -63,7 +91,7 @@ public class JsonConfigPluginTest {
         DefaultGoPluginApiRequest getConfigRequest = new DefaultGoPluginApiRequest("configrepo", "1.0", "go.plugin-settings.get-configuration");
 
         GoPluginApiResponse response = plugin.handle(getConfigRequest);
-        assertThat(response.responseCode(), is(DefaultGoPluginApiResponse.SUCCESS_RESPONSE_CODE));
+        assertThat(response.responseCode(), is(SUCCESS_RESPONSE_CODE));
         JsonObject responseJsonObject = getJsonObjectFromResponse(response);
         JsonElement environmentPatternConfig = responseJsonObject.get("environment_pattern");
         assertNotNull(environmentPatternConfig);
@@ -80,7 +108,7 @@ public class JsonConfigPluginTest {
         DefaultGoPluginApiRequest getConfigRequest = new DefaultGoPluginApiRequest("configrepo", "1.0", "go.plugin-settings.get-configuration");
 
         GoPluginApiResponse response = plugin.handle(getConfigRequest);
-        assertThat(response.responseCode(), is(DefaultGoPluginApiResponse.SUCCESS_RESPONSE_CODE));
+        assertThat(response.responseCode(), is(SUCCESS_RESPONSE_CODE));
         JsonObject responseJsonObject = getJsonObjectFromResponse(response);
         JsonElement pipelinePatternConfig = responseJsonObject.get("pipeline_pattern");
         assertNotNull(pipelinePatternConfig);
@@ -102,7 +130,7 @@ public class JsonConfigPluginTest {
         DefaultGoPluginApiRequest getConfigRequest = new DefaultGoPluginApiRequest("configrepo", "1.0", "go.plugin-settings.get-view");
 
         GoPluginApiResponse response = plugin.handle(getConfigRequest);
-        assertThat(response.responseCode(), is(DefaultGoPluginApiResponse.SUCCESS_RESPONSE_CODE));
+        assertThat(response.responseCode(), is(SUCCESS_RESPONSE_CODE));
     }
 
     @Test
@@ -110,7 +138,7 @@ public class JsonConfigPluginTest {
         DefaultGoPluginApiRequest validateRequest = new DefaultGoPluginApiRequest("configrepo", "1.0", "go.plugin-settings.validate-configuration");
 
         GoPluginApiResponse response = plugin.handle(validateRequest);
-        assertThat(response.responseCode(), is(DefaultGoPluginApiResponse.SUCCESS_RESPONSE_CODE));
+        assertThat(response.responseCode(), is(SUCCESS_RESPONSE_CODE));
     }
 
     @Test
@@ -123,7 +151,7 @@ public class JsonConfigPluginTest {
         parseDirectoryRequest.setRequestBody(requestBody);
 
         GoPluginApiResponse response = plugin.handle(parseDirectoryRequest);
-        assertThat(response.responseCode(), is(DefaultGoPluginApiResponse.SUCCESS_RESPONSE_CODE));
+        assertThat(response.responseCode(), is(SUCCESS_RESPONSE_CODE));
         JsonObject responseJsonObject = getJsonObjectFromResponse(response);
         assertNull(responseJsonObject.get("pluginErrors"));
     }
@@ -182,7 +210,7 @@ public class JsonConfigPluginTest {
         GoPluginApiResponse response = plugin.handle(parseDirectoryRequest);
 
         verify(goAccessor, times(1)).submit(any(GoApiRequest.class));
-        assertThat(response.responseCode(), is(DefaultGoPluginApiResponse.SUCCESS_RESPONSE_CODE));
+        assertThat(response.responseCode(), is(SUCCESS_RESPONSE_CODE));
     }
 
     @Test
@@ -201,7 +229,7 @@ public class JsonConfigPluginTest {
 
         GoPluginApiResponse response = plugin.handle(pipelineExportRequest);
 
-        assertThat(response.responseCode(), is(DefaultGoPluginApiResponse.SUCCESS_RESPONSE_CODE));
+        assertThat(response.responseCode(), is(SUCCESS_RESPONSE_CODE));
         Gson pretty = new GsonBuilder().setPrettyPrinting().create();
         String prettyPrinted = pretty.toJson(pipeline);
         assertThat(response.responseBody(), is(gson.toJson(Collections.singletonMap("pipeline", prettyPrinted))));
@@ -214,7 +242,7 @@ public class JsonConfigPluginTest {
 
         GoPluginApiResponse response = plugin.handle(request);
 
-        assertThat(response.responseCode(), is(DefaultGoPluginApiResponse.SUCCESS_RESPONSE_CODE));
+        assertThat(response.responseCode(), is(SUCCESS_RESPONSE_CODE));
         assertThat(response.responseBody(), is(expected));
     }
 
@@ -233,7 +261,7 @@ public class JsonConfigPluginTest {
         GoPluginApiResponse response = plugin.handle(parseDirectoryRequest);
 
         verify(goAccessor, times(1)).submit(any(GoApiRequest.class));
-        assertThat(response.responseCode(), is(DefaultGoPluginApiResponse.SUCCESS_RESPONSE_CODE));
+        assertThat(response.responseCode(), is(SUCCESS_RESPONSE_CODE));
     }
 
     @Test
@@ -250,7 +278,7 @@ public class JsonConfigPluginTest {
 
         GoPluginApiResponse response = plugin.handle(parseDirectoryRequest);
 
-        assertThat(response.responseCode(), is(DefaultGoPluginApiResponse.SUCCESS_RESPONSE_CODE));
+        assertThat(response.responseCode(), is(SUCCESS_RESPONSE_CODE));
         final JsonParser parser = new JsonParser();
         JsonElement responseObj = parser.parse(response.responseBody());
         assertTrue(responseObj.isJsonObject());
