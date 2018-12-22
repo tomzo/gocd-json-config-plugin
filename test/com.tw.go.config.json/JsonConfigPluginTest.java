@@ -15,6 +15,7 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 
@@ -56,7 +57,16 @@ public class JsonConfigPluginTest {
     public void respondsToParseContentRequest() throws Exception {
         final Gson gson = new Gson();
         DefaultGoPluginApiRequest request = new DefaultGoPluginApiRequest("configrepo", "2.0", REQ_PARSE_CONTENT);
-        request.setRequestBody(gson.toJson(Collections.singletonMap("content", "{\"name\": \"a\", \"stages\":[]}")));
+
+        request.setRequestBody(gson.toJson(
+                Collections.singletonMap("contents",
+                        Arrays.asList(
+                                Collections.singletonMap("foo.gopipeline.json", "{\"name\": \"a\", \"stages\":[]}"),
+                                Collections.singletonMap("foo.goenvironment.json", "{\"name\": \"b\"}")
+                        )
+                )
+        ));
+
         GoPluginApiResponse response = plugin.handle(request);
         JsonObject jsonObjectFromResponse = getJsonObjectFromResponse(response);
         assertEquals(SUCCESS_RESPONSE_CODE, response.responseCode());
@@ -65,15 +75,23 @@ public class JsonConfigPluginTest {
         JsonObject expected = new JsonObject();
 
         JsonArray pipelines = new JsonArray();
+        JsonArray envs = new JsonArray();
+
         expected.add("errors", new JsonArray());
-        expected.add("environments", new JsonArray());
+        expected.add("environments", envs);
         expected.add("pipelines", pipelines);
         expected.addProperty("target_version", 1);
+
         JsonObject p1 = new JsonObject();
         p1.addProperty("name", "a");
         p1.add("stages", new JsonArray());
-        p1.addProperty("location", "content");
+        p1.addProperty("location", "foo.gopipeline.json");
         pipelines.add(p1);
+
+        JsonObject e1 = new JsonObject();
+        e1.addProperty("name", "b");
+        e1.addProperty("location", "foo.goenvironment.json");
+        envs.add(e1);
 
         assertEquals(expected, jsonObjectFromResponse);
     }

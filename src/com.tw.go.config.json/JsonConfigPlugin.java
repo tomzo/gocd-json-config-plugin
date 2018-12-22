@@ -29,9 +29,6 @@ import static java.lang.String.format;
 
 @Extension
 public class JsonConfigPlugin implements GoPlugin, ConfigRepoMessages {
-    static final String DEFAULT_ENVIRONMENT_PATTERN = "**/*.goenvironment.json";
-    static final String DEFAULT_PIPELINE_PATTERN = "**/*.gopipeline.json";
-
     private static final String PLUGIN_SETTINGS_ENVIRONMENT_PATTERN = "environment_pattern";
     private static final String DISPLAY_NAME_ENVIRONMENT_PATTERN = "Go environment files pattern";
     private static final String DISPLAY_NAME_PIPELINE_PATTERN = "Go pipeline files pattern";
@@ -87,8 +84,8 @@ public class JsonConfigPlugin implements GoPlugin, ConfigRepoMessages {
 
     private GoPluginApiResponse handleGetPluginSettingsConfiguration() {
         Map<String, Object> response = new HashMap<>();
-        response.put(PLUGIN_SETTINGS_PIPELINE_PATTERN, createField(DISPLAY_NAME_PIPELINE_PATTERN, DEFAULT_PIPELINE_PATTERN, false, false, "0"));
-        response.put(PLUGIN_SETTINGS_ENVIRONMENT_PATTERN, createField(DISPLAY_NAME_ENVIRONMENT_PATTERN, DEFAULT_ENVIRONMENT_PATTERN, false, false, "1"));
+        response.put(PLUGIN_SETTINGS_PIPELINE_PATTERN, createField(DISPLAY_NAME_PIPELINE_PATTERN, PluginSettings.DEFAULT_PIPELINE_PATTERN, false, false, "0"));
+        response.put(PLUGIN_SETTINGS_ENVIRONMENT_PATTERN, createField(DISPLAY_NAME_ENVIRONMENT_PATTERN, PluginSettings.DEFAULT_ENVIRONMENT_PATTERN, false, false, "1"));
         return success(gson.toJson(response));
     }
 
@@ -104,12 +101,32 @@ public class JsonConfigPlugin implements GoPlugin, ConfigRepoMessages {
 
     private GoPluginApiResponse handleParseContentRequest(GoPluginApiRequest request) {
         return handlingErrors(() -> {
+            FilenameMatcher matcher = new FilenameMatcher(getPluginSettings());
             ParsedRequest parsed = ParsedRequest.parse(request);
+            List<Map<String, String>> contents = parsed.getParam("contents");
 
-            String content = parsed.getStringParam("content");
             JsonConfigCollection result = new JsonConfigCollection();
-            JsonElement pipeline = JsonConfigParser.parseStream(result, new ByteArrayInputStream(content.getBytes()), "content");
-            result.addPipeline(pipeline, "content");
+            contents.forEach(file -> {
+                String filename = file.keySet().iterator().next();
+                String content = file.get(filename);
+
+                ByteArrayInputStream contentStream = new ByteArrayInputStream(content.getBytes());
+
+                if (matcher.isEnvironmentFile(filename)) {
+                    JsonElement env = JsonConfigParser.parseStream(result, contentStream, filename);
+                    if (null != env) {
+                        result.addEnvironment(env, filename);
+                    }
+                } else if (matcher.isPipelineFile(filename)) {
+                    JsonElement pipe = JsonConfigParser.parseStream(result, contentStream, filename);
+                    if (null != pipe) {
+                        result.addPipeline(pipe, filename);
+                    }
+                } else {
+                    result.addError(new PluginError("File does not match environment or pipeline pattern", filename));
+                }
+            });
+
             result.updateVersionFromPipelinesAndEnvironments();
 
             return success(gson.toJson(result.getJsonObject()));
@@ -133,17 +150,13 @@ public class JsonConfigPlugin implements GoPlugin, ConfigRepoMessages {
             File baseDir = new File(parsed.getStringParam("directory"));
 
             JsonConfigParser parser = new JsonConfigParser();
-            PluginSettings settings = getPluginSettings();
+            PluginSettings opts = getPluginSettings();
             ConfigDirectoryScanner scanner = new AntDirectoryScanner();
 
-            String environmentPattern = isBlank(settings.getEnvironmentPattern()) ?
-                    DEFAULT_ENVIRONMENT_PATTERN : settings.getEnvironmentPattern();
-
-            String pipelinePattern = isBlank(settings.getPipelinePattern()) ?
-                    DEFAULT_PIPELINE_PATTERN : settings.getPipelinePattern();
-
             ConfigDirectoryParser configDirectoryParser = new ConfigDirectoryParser(
-                    scanner, parser, pipelinePattern, environmentPattern);
+                    scanner, parser, opts.getPipelinePattern(), opts.getEnvironmentPattern()
+            );
+
             JsonConfigCollection config = configDirectoryParser.parseDirectory(baseDir);
 
             config.updateVersionFromPipelinesAndEnvironments();
@@ -151,10 +164,6 @@ public class JsonConfigPlugin implements GoPlugin, ConfigRepoMessages {
 
             return success(gson.toJson(responseJsonObject));
         });
-    }
-
-    private boolean isBlank(String pattern) {
-        return pattern == null || pattern.isEmpty();
     }
 
     private PluginSettings getPluginSettings() {

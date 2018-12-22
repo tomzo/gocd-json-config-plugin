@@ -29,8 +29,8 @@ public class ConfigDirectoryParserTest {
 
         parser = new ConfigDirectoryParser(
                 new AntDirectoryScanner(), new JsonConfigParser(),
-                JsonConfigPlugin.DEFAULT_PIPELINE_PATTERN,
-                JsonConfigPlugin.DEFAULT_ENVIRONMENT_PATTERN);
+                PluginSettings.DEFAULT_PIPELINE_PATTERN,
+                PluginSettings.DEFAULT_ENVIRONMENT_PATTERN);
 
         FileUtils.forceMkdir(directory);
 
