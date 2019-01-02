@@ -1,11 +1,11 @@
 group = 'com.thoughtworks.go'
-version = '0.3.2'
+version = '0.3.3'
 
 apply plugin: 'java'
 
 project.ext.pluginDesc = [
         version    : project.version,
-        goCdVersion: '18.11.0'
+        goCdVersion: '18.12.0'
 ]
 
 sourceCompatibility = 1.8
