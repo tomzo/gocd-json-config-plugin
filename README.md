@@ -123,7 +123,7 @@ sudo bash -c "`curl -L https://raw.githubusercontent.com/ai-traders/ide/master/i
 
 Add `Idefile` in your project with following content
 ```
-IDE_DOCKER_IMAGE=tomzo/gocd-json-ide:0.3.2
+IDE_DOCKER_IMAGE=tomzo/gocd-json-ide:0.3.3
 ```
 
 To validate files run:
@@ -146,7 +146,7 @@ watch gocd-json syntax mypipe.gopipeline.json
 ## Usage with docker only
 
 ```
-docker run -ti --rm --volume $(pwd):/ide/work tomzo/gocd-json-ide:0.3.2 bash
+docker run -ti --rm --volume $(pwd):/ide/work tomzo/gocd-json-ide:0.3.3 bash
 ```
 Then you have an interactive shell as above.
 

@@ -1,3 +1,7 @@
+# 0.3.3 (03 Jan 2019)
+
+ * Added support for `parse-content`.
+
 # 0.3.2 (Dec 10 2018)
 
 Accept stdin input in CLI tool
