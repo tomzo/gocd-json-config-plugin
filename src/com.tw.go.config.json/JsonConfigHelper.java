@@ -2,15 +2,14 @@ package com.tw.go.config.json;
 
 import com.thoughtworks.go.plugin.api.GoPluginIdentifier;
 import com.thoughtworks.go.plugin.api.request.GoApiRequest;
-import com.thoughtworks.go.plugin.api.response.GoPluginApiResponse;
 
 import java.util.Map;
 
-public class JsonConfigHelper {
+class JsonConfigHelper {
     private JsonConfigHelper() {
     }
 
-    public static GoApiRequest request(final String api, final String responseBody, GoPluginIdentifier identifier) {
+    static GoApiRequest request(final String api, final String responseBody, GoPluginIdentifier identifier) {
         return new GoApiRequest() {
             @Override
             public String api() {
@@ -42,25 +41,5 @@ public class JsonConfigHelper {
                 return responseBody;
             }
         };
-    }
-
-    static GoPluginApiResponse response(final int responseCode, final String json) {
-        return new GoPluginApiResponse() {
-            @Override
-            public int responseCode() {
-                return responseCode;
-            }
-
-            @Override
-            public Map<String, String> responseHeaders() {
-                return null;
-            }
-
-            @Override
-            public String responseBody() {
-                return json;
-            }
-        };
-
     }
 }

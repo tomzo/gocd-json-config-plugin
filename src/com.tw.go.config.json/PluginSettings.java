@@ -1,31 +1,30 @@
 package com.tw.go.config.json;
 
-public class PluginSettings {
+class PluginSettings {
+    static final String DEFAULT_PIPELINE_PATTERN = "**/*.gopipeline.json";
+    static final String DEFAULT_ENVIRONMENT_PATTERN = "**/*.goenvironment.json";
+
     private String pipelinePattern;
     private String environmentPattern;
 
-    public PluginSettings()
-    {
+    PluginSettings() {
+        this(DEFAULT_PIPELINE_PATTERN, DEFAULT_ENVIRONMENT_PATTERN);
     }
-    public PluginSettings(String pipelinePattern,String environmentPattern)
-    {
+
+    PluginSettings(String pipelinePattern, String environmentPattern) {
         this.pipelinePattern = pipelinePattern;
         this.environmentPattern = environmentPattern;
     }
 
-    public String getPipelinePattern() {
-        return pipelinePattern;
+    private static boolean isBlank(String pattern) {
+        return pattern == null || pattern.trim().isEmpty();
     }
 
-    public void setPipelinePattern(String pipelinePattern) {
-        this.pipelinePattern = pipelinePattern;
+    String getPipelinePattern() {
+        return isBlank(pipelinePattern) ? DEFAULT_PIPELINE_PATTERN : pipelinePattern;
     }
 
-    public String getEnvironmentPattern() {
-        return environmentPattern;
-    }
-
-    public void setEnvironmentPattern(String environmentPattern) {
-        this.environmentPattern = environmentPattern;
+    String getEnvironmentPattern() {
+        return isBlank(environmentPattern) ? DEFAULT_ENVIRONMENT_PATTERN : environmentPattern;
     }
 }
