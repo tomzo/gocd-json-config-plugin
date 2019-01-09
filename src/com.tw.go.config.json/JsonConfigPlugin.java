@@ -23,22 +23,25 @@ import java.io.IOException;
 import java.util.*;
 import java.util.function.Supplier;
 
-import static com.thoughtworks.go.plugin.api.response.DefaultGoPluginApiResponse.error;
-import static com.thoughtworks.go.plugin.api.response.DefaultGoPluginApiResponse.success;
+import static com.thoughtworks.go.plugin.api.response.DefaultGoPluginApiResponse.*;
+import static com.tw.go.config.json.PluginSettings.*;
 import static java.lang.String.format;
 
 @Extension
 public class JsonConfigPlugin implements GoPlugin, ConfigRepoMessages {
-    private static final String PLUGIN_SETTINGS_ENVIRONMENT_PATTERN = "environment_pattern";
     private static final String DISPLAY_NAME_ENVIRONMENT_PATTERN = "Go environment files pattern";
     private static final String DISPLAY_NAME_PIPELINE_PATTERN = "Go pipeline files pattern";
-    private static final String PLUGIN_SETTINGS_PIPELINE_PATTERN = "pipeline_pattern";
     private static final String PLUGIN_ID = "json.config.plugin";
     private static Logger LOGGER = Logger.getLoggerFor(JsonConfigPlugin.class);
 
     private final Gson gson = new Gson();
     private final Gson prettyPrint = new GsonBuilder().setPrettyPrinting().create();
     private GoApplicationAccessor goApplicationAccessor;
+    private PluginSettings settings;
+
+    private static boolean isBlank(String pattern) {
+        return pattern == null || pattern.trim().isEmpty();
+    }
 
     @Override
     public void initializeGoApplicationAccessor(GoApplicationAccessor goApplicationAccessor) {
@@ -60,15 +63,43 @@ public class JsonConfigPlugin implements GoPlugin, ConfigRepoMessages {
             case REQ_PLUGIN_SETTINGS_VALIDATE_CONFIGURATION:
                 return handleValidatePluginSettingsConfiguration();
             case REQ_PARSE_CONTENT:
+                ensureConfigured();
                 return handleParseContentRequest(request);
             case REQ_PARSE_DIRECTORY:
+                ensureConfigured();
                 return handleParseDirectoryRequest(request);
             case REQ_PIPELINE_EXPORT:
                 return handlePipelineExportRequest(request);
+            case REQ_PLUGIN_SETTINGS_CHANGED:
+                configurePlugin(PluginSettings.fromJson(request.requestBody()));
+                return new DefaultGoPluginApiResponse(SUCCESS_RESPONSE_CODE, "");
             case REQ_GET_CAPABILITIES:
                 return success(gson.toJson(new Capabilities()));
         }
         throw new UnhandledRequestTypeException(request.requestName());
+    }
+
+    String getPipelinePattern() {
+        if (null != settings && !isBlank(settings.getPipelinePattern())) {
+            return settings.getPipelinePattern();
+        }
+        return DEFAULT_PIPELINE_PATTERN;
+    }
+
+    String getEnvironmentPattern() {
+        if (null != settings && !isBlank(settings.getEnvironmentPattern())) {
+            return settings.getEnvironmentPattern();
+        }
+        return DEFAULT_ENVIRONMENT_PATTERN;
+    }
+
+    /**
+     * fetches plugin settings if we haven't yet
+     */
+    private void ensureConfigured() {
+        if (null == settings) {
+            settings = fetchPluginSettings();
+        }
     }
 
     private GoPluginApiResponse handleGetPluginSettingsView() throws IOException {
@@ -84,8 +115,8 @@ public class JsonConfigPlugin implements GoPlugin, ConfigRepoMessages {
 
     private GoPluginApiResponse handleGetPluginSettingsConfiguration() {
         Map<String, Object> response = new HashMap<>();
-        response.put(PLUGIN_SETTINGS_PIPELINE_PATTERN, createField(DISPLAY_NAME_PIPELINE_PATTERN, PluginSettings.DEFAULT_PIPELINE_PATTERN, false, false, "0"));
-        response.put(PLUGIN_SETTINGS_ENVIRONMENT_PATTERN, createField(DISPLAY_NAME_ENVIRONMENT_PATTERN, PluginSettings.DEFAULT_ENVIRONMENT_PATTERN, false, false, "1"));
+        response.put(PLUGIN_SETTINGS_PIPELINE_PATTERN, createField(DISPLAY_NAME_PIPELINE_PATTERN, DEFAULT_PIPELINE_PATTERN, false, false, "0"));
+        response.put(PLUGIN_SETTINGS_ENVIRONMENT_PATTERN, createField(DISPLAY_NAME_ENVIRONMENT_PATTERN, DEFAULT_ENVIRONMENT_PATTERN, false, false, "1"));
         return success(gson.toJson(response));
     }
 
@@ -101,7 +132,7 @@ public class JsonConfigPlugin implements GoPlugin, ConfigRepoMessages {
 
     private GoPluginApiResponse handleParseContentRequest(GoPluginApiRequest request) {
         return handlingErrors(() -> {
-            FilenameMatcher matcher = new FilenameMatcher(getPluginSettings());
+            FilenameMatcher matcher = new FilenameMatcher(getPipelinePattern(), getEnvironmentPattern());
             ParsedRequest parsed = ParsedRequest.parse(request);
             List<Map<String, String>> contents = parsed.getParam("contents");
 
@@ -150,11 +181,10 @@ public class JsonConfigPlugin implements GoPlugin, ConfigRepoMessages {
             File baseDir = new File(parsed.getStringParam("directory"));
 
             JsonConfigParser parser = new JsonConfigParser();
-            PluginSettings opts = getPluginSettings();
             ConfigDirectoryScanner scanner = new AntDirectoryScanner();
 
             ConfigDirectoryParser configDirectoryParser = new ConfigDirectoryParser(
-                    scanner, parser, opts.getPipelinePattern(), opts.getEnvironmentPattern()
+                    scanner, parser, getPipelinePattern(), getEnvironmentPattern()
             );
 
             JsonConfigCollection config = configDirectoryParser.parseDirectory(baseDir);
@@ -166,17 +196,14 @@ public class JsonConfigPlugin implements GoPlugin, ConfigRepoMessages {
         });
     }
 
-    private PluginSettings getPluginSettings() {
+    private PluginSettings fetchPluginSettings() {
         Map<String, Object> requestMap = new HashMap<>();
         requestMap.put("plugin-id", PLUGIN_ID);
         GoApiResponse response = goApplicationAccessor.submit(createGoApiRequest(REQ_GET_PLUGIN_SETTINGS, JSONUtils.toJSON(requestMap)));
         if (response.responseBody() == null || response.responseBody().trim().isEmpty()) {
             return new PluginSettings();
         }
-        Map<String, String> responseBodyMap = JSONUtils.fromJSON(response.responseBody());
-        return new PluginSettings(
-                responseBodyMap.get(PLUGIN_SETTINGS_PIPELINE_PATTERN),
-                responseBodyMap.get(PLUGIN_SETTINGS_ENVIRONMENT_PATTERN));
+        return PluginSettings.fromJson(response.responseBody());
     }
 
 
@@ -202,6 +229,10 @@ public class JsonConfigPlugin implements GoPlugin, ConfigRepoMessages {
     @Override
     public GoPluginIdentifier pluginIdentifier() {
         return new GoPluginIdentifier("configrepo", Arrays.asList("1.0", "2.0"));
+    }
+
+    private void configurePlugin(PluginSettings settings) {
+        this.settings = settings;
     }
 
     private GoApiRequest createGoApiRequest(final String api, final String responseBody) {
