@@ -1,8 +1,12 @@
 package com.tw.go.config.json;
 
+import java.util.Map;
+
 class PluginSettings {
     static final String DEFAULT_PIPELINE_PATTERN = "**/*.gopipeline.json";
     static final String DEFAULT_ENVIRONMENT_PATTERN = "**/*.goenvironment.json";
+    static final String PLUGIN_SETTINGS_PIPELINE_PATTERN = "pipeline_pattern";
+    static final String PLUGIN_SETTINGS_ENVIRONMENT_PATTERN = "environment_pattern";
 
     private String pipelinePattern;
     private String environmentPattern;
@@ -16,15 +20,19 @@ class PluginSettings {
         this.environmentPattern = environmentPattern;
     }
 
-    private static boolean isBlank(String pattern) {
-        return pattern == null || pattern.trim().isEmpty();
+    static PluginSettings fromJson(String json) {
+        Map<String, String> raw = JSONUtils.fromJSON(json);
+        return new PluginSettings(
+                raw.get(PLUGIN_SETTINGS_PIPELINE_PATTERN),
+                raw.get(PLUGIN_SETTINGS_ENVIRONMENT_PATTERN));
+
     }
 
     String getPipelinePattern() {
-        return isBlank(pipelinePattern) ? DEFAULT_PIPELINE_PATTERN : pipelinePattern;
+        return pipelinePattern;
     }
 
     String getEnvironmentPattern() {
-        return isBlank(environmentPattern) ? DEFAULT_ENVIRONMENT_PATTERN : environmentPattern;
+        return environmentPattern;
     }
 }

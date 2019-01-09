@@ -9,6 +9,7 @@ import com.thoughtworks.go.plugin.api.response.DefaultGoApiResponse;
 import com.thoughtworks.go.plugin.api.response.DefaultGoPluginApiResponse;
 import com.thoughtworks.go.plugin.api.response.GoApiResponse;
 import com.thoughtworks.go.plugin.api.response.GoPluginApiResponse;
+import junit.framework.TestCase;
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -21,6 +22,8 @@ import java.util.HashMap;
 
 import static com.thoughtworks.go.plugin.api.response.DefaultGoPluginApiResponse.SUCCESS_RESPONSE_CODE;
 import static com.tw.go.config.json.ConfigRepoMessages.REQ_PARSE_CONTENT;
+import static com.tw.go.config.json.ConfigRepoMessages.REQ_PLUGIN_SETTINGS_CHANGED;
+import static com.tw.go.config.json.PluginSettings.*;
 import static java.lang.String.format;
 import static junit.framework.Assert.assertTrue;
 import static junit.framework.TestCase.assertEquals;
@@ -70,7 +73,7 @@ public class JsonConfigPluginTest {
         GoPluginApiResponse response = plugin.handle(request);
         JsonObject jsonObjectFromResponse = getJsonObjectFromResponse(response);
         assertEquals(SUCCESS_RESPONSE_CODE, response.responseCode());
-        assertEquals(new JsonArray(), jsonObjectFromResponse.get("errors"));
+        TestCase.assertEquals(new JsonArray(), jsonObjectFromResponse.get("errors"));
 
         JsonObject expected = new JsonObject();
 
@@ -93,7 +96,7 @@ public class JsonConfigPluginTest {
         e1.addProperty("location", "foo.goenvironment.json");
         envs.add(e1);
 
-        assertEquals(expected, jsonObjectFromResponse);
+        TestCase.assertEquals(expected, jsonObjectFromResponse);
     }
 
     @Test
@@ -103,6 +106,25 @@ public class JsonConfigPluginTest {
         GoPluginApiResponse response = plugin.handle(getConfigRequest);
         assertThat(response.responseCode(), is(SUCCESS_RESPONSE_CODE));
     }
+
+    @Test
+    public void shouldConsumePluginSettingsOnConfigChangeRequest() throws UnhandledRequestTypeException {
+        DefaultGoPluginApiRequest request = new DefaultGoPluginApiRequest("configrepo", "2.0", REQ_PLUGIN_SETTINGS_CHANGED);
+        HashMap<String, String> body = new HashMap<>();
+        body.put(PLUGIN_SETTINGS_PIPELINE_PATTERN, "*.foo.pipes.json");
+        body.put(PLUGIN_SETTINGS_ENVIRONMENT_PATTERN, "*.foo.envs.json");
+        request.setRequestBody(JSONUtils.toJSON(body));
+
+        assertEquals(DEFAULT_PIPELINE_PATTERN, plugin.getPipelinePattern());
+        assertEquals(DEFAULT_ENVIRONMENT_PATTERN, plugin.getEnvironmentPattern());
+
+        GoPluginApiResponse response = plugin.handle(request);
+
+        assertThat(response.responseCode(), is(SUCCESS_RESPONSE_CODE));
+        assertEquals("*.foo.pipes.json", plugin.getPipelinePattern());
+        assertEquals("*.foo.envs.json", plugin.getEnvironmentPattern());
+    }
+
 
     @Test
     public void shouldContainEnvironmentPatternInResponseToGetConfigurationRequest() throws UnhandledRequestTypeException {

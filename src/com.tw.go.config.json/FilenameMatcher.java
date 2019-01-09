@@ -12,9 +12,9 @@ class FilenameMatcher {
     private final String pipelineFilePattern;
     private final String environmentFilePattern;
 
-    FilenameMatcher(PluginSettings config) {
-        pipelineFilePattern = basename(config.getPipelinePattern());
-        environmentFilePattern = basename(config.getEnvironmentPattern());
+    FilenameMatcher(String pipelineFilePattern, String environmentFilePattern) {
+        this.pipelineFilePattern = basename(pipelineFilePattern);
+        this.environmentFilePattern = basename(environmentFilePattern);
     }
 
     /**

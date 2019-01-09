@@ -18,7 +18,7 @@ class JsonConfigHelper {
 
             @Override
             public String apiVersion() {
-                return "2.0";
+                return "1.0";
             }
 
             @Override
