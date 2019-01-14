@@ -110,7 +110,7 @@ Follow the steps on [https://github.com/gocd-contrib/gocd-cli](https://github.co
 Then:
 
 ```bash
-./gocd configrepo check -i json.config.plugin /path/to/your-pipeline.gopipeline.json
+./gocd configrepo syntax -i json.config.plugin /path/to/your-pipeline.gopipeline.json
 ```
 
 ## Usage with IDE and docker
