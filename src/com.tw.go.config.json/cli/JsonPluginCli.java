@@ -20,7 +20,7 @@ public class JsonPluginCli {
         SyntaxCmd syntax = new SyntaxCmd();
 
         JCommander cmd = JCommander.newBuilder().
-                programName("yaml-cli").
+                programName("json-cli").
                 addObject(root).
                 addCommand("syntax", syntax).
                 build();
@@ -59,9 +59,10 @@ public class JsonPluginCli {
         result.remove("pipelines");
 
         if (collection.getErrors().size() > 0) {
+            result.addProperty("valid", false);
             die(1, result.toString());
         } else {
-            die(0, "OK");
+            die(0, "{\"valid\":true}");
         }
     }
 
