@@ -22,6 +22,8 @@ dependencies {
     compile group: 'com.beust', name: 'jcommander', version: '1.72'
 
     compileOnly group: 'cd.go.plugin', name: 'go-plugin-api', version: project.pluginDesc.goCdVersion
+    compileOnly group: 'cd.go.plugin', name: 'go-plugin-config-repo', version: project.pluginDesc.goCdVersion
+    testCompile group: 'cd.go.plugin', name: 'go-plugin-config-repo', version: project.pluginDesc.goCdVersion
     testCompile group: 'cd.go.plugin', name: 'go-plugin-api', version: project.pluginDesc.goCdVersion
 
     testCompile group: 'junit', name: 'junit', version: '4.11'

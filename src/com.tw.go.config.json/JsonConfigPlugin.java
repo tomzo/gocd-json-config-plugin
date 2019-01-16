@@ -15,6 +15,7 @@ import com.thoughtworks.go.plugin.api.request.GoPluginApiRequest;
 import com.thoughtworks.go.plugin.api.response.DefaultGoPluginApiResponse;
 import com.thoughtworks.go.plugin.api.response.GoApiResponse;
 import com.thoughtworks.go.plugin.api.response.GoPluginApiResponse;
+import com.thoughtworks.go.plugin.configrepo.contract.CRPipeline;
 import org.apache.commons.io.IOUtils;
 
 import java.io.ByteArrayInputStream;
@@ -168,8 +169,8 @@ public class JsonConfigPlugin implements GoPlugin, ConfigRepoMessages {
         return handlingErrors(() -> {
             ParsedRequest parsed = ParsedRequest.parse(request);
 
-            Map<String, Object> pipeline = parsed.getParam("pipeline");
-            String name = (String) pipeline.get("name");
+            CRPipeline pipeline = parsed.getParam("pipeline", CRPipeline.class);
+            String name = pipeline.getName();
 
             DefaultGoPluginApiResponse response = success(gson.toJson(Collections.singletonMap("pipeline", prettyPrint.toJson(pipeline))));
 

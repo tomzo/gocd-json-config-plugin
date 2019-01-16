@@ -9,6 +9,7 @@ import com.thoughtworks.go.plugin.api.response.DefaultGoApiResponse;
 import com.thoughtworks.go.plugin.api.response.DefaultGoPluginApiResponse;
 import com.thoughtworks.go.plugin.api.response.GoApiResponse;
 import com.thoughtworks.go.plugin.api.response.GoPluginApiResponse;
+import com.thoughtworks.go.plugin.configrepo.contract.CRPipeline;
 import junit.framework.TestCase;
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
@@ -255,10 +256,9 @@ public class JsonConfigPluginTest {
 
     @Test
     public void shouldGiveBackPipelineJSONForPipelineExport() throws UnhandledRequestTypeException {
-        HashMap<String, Object> pipeline = new HashMap<String, Object>();
-        pipeline.put("name", "pipeline");
-        pipeline.put("group", "group");
-        pipeline.put("stages", Collections.emptyList());
+        CRPipeline pipeline = new CRPipeline();
+        pipeline.setGroupName("group");
+        pipeline.setName("pipeline");
 
         Gson gson = new Gson();
         String pipelineJson = gson.toJson(pipeline);

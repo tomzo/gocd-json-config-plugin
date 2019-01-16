@@ -85,6 +85,20 @@ class ParsedRequest {
         }
     }
 
+    <T> T getParam(String paramName, Class<T> type) {
+        try {
+            JsonElement json = params.get(paramName);
+
+            if (null == json || json.isJsonNull()) {
+                throw new RequestParseException(format(MISSING_PARAM_MESSAGE, paramName, requestName));
+            }
+
+            return GSON.fromJson(json, type);
+        } catch (Exception e) {
+            throw new RequestParseException(format(PARAM_FAILED_TO_PARSE_TO_TYPE, paramName, requestName, e.getMessage()));
+        }
+    }
+
     String getConfigurationKey(String keyName) {
         String value = null;
 
