@@ -134,12 +134,10 @@ public class JsonConfigPlugin implements GoPlugin, ConfigRepoMessages {
         return handlingErrors(() -> {
             FilenameMatcher matcher = new FilenameMatcher(getPipelinePattern(), getEnvironmentPattern());
             ParsedRequest parsed = ParsedRequest.parse(request);
-            List<Map<String, String>> contents = parsed.getParam("contents");
+            Map<String, String> contents = parsed.getParam("contents");
 
             JsonConfigCollection result = new JsonConfigCollection();
-            contents.forEach(file -> {
-                String filename = file.keySet().iterator().next();
-                String content = file.get(filename);
+            contents.forEach((filename, content) -> {
 
                 ByteArrayInputStream contentStream = new ByteArrayInputStream(content.getBytes());
 
