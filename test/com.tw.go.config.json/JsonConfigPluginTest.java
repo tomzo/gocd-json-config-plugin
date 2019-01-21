@@ -16,7 +16,6 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 
@@ -61,14 +60,10 @@ public class JsonConfigPluginTest {
         final Gson gson = new Gson();
         DefaultGoPluginApiRequest request = new DefaultGoPluginApiRequest("configrepo", "2.0", REQ_PARSE_CONTENT);
 
-        request.setRequestBody(gson.toJson(
-                Collections.singletonMap("contents",
-                        Arrays.asList(
-                                Collections.singletonMap("foo.gopipeline.json", "{\"name\": \"a\", \"stages\":[]}"),
-                                Collections.singletonMap("foo.goenvironment.json", "{\"name\": \"b\"}")
-                        )
-                )
-        ));
+        HashMap<String, String> contents = new HashMap<>();
+        contents.put("foo.gopipeline.json", "{\"name\": \"a\", \"stages\":[]}");
+        contents.put("foo.goenvironment.json", "{\"name\": \"b\"}");
+        request.setRequestBody(gson.toJson(Collections.singletonMap("contents", contents)));
 
         GoPluginApiResponse response = plugin.handle(request);
         JsonObject jsonObjectFromResponse = getJsonObjectFromResponse(response);
