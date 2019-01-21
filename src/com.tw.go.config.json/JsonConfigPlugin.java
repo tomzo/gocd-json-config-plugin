@@ -75,8 +75,23 @@ public class JsonConfigPlugin implements GoPlugin, ConfigRepoMessages {
                 return new DefaultGoPluginApiResponse(SUCCESS_RESPONSE_CODE, "");
             case REQ_GET_CAPABILITIES:
                 return success(gson.toJson(new Capabilities()));
+            case REQ_GET_ICON:
+                return handleGetIconRequest();
         }
         throw new UnhandledRequestTypeException(request.requestName());
+    }
+
+    private GoPluginApiResponse handleGetIconRequest() {
+        try {
+            JsonObject jsonObject = new JsonObject();
+            byte[] contents = IOUtils.toByteArray(getClass().getResourceAsStream("/json.svg"));
+
+            jsonObject.addProperty("content_type", "image/svg+xml");
+            jsonObject.addProperty("data", Base64.getEncoder().encodeToString(contents));
+            return success(gson.toJson(jsonObject));
+        } catch (IOException e) {
+            return error(e.getMessage());
+        }
     }
 
     String getPipelinePattern() {

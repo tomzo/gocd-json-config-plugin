@@ -11,11 +11,14 @@ import com.thoughtworks.go.plugin.api.response.GoApiResponse;
 import com.thoughtworks.go.plugin.api.response.GoPluginApiResponse;
 import junit.framework.TestCase;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.HashMap;
 
@@ -28,8 +31,7 @@ import static junit.framework.Assert.assertTrue;
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertNull;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
@@ -176,6 +178,19 @@ public class JsonConfigPluginTest {
         assertThat(response.responseCode(), is(SUCCESS_RESPONSE_CODE));
     }
 
+    @Test
+    public void shouldRespondWithGetIcon() throws UnhandledRequestTypeException, IOException {
+        DefaultGoPluginApiRequest request = new DefaultGoPluginApiRequest("configrepo", "2.0", "get-icon");
+
+        GoPluginApiResponse response = plugin.handle(request);
+        assertThat(response.responseCode(), is(SUCCESS_RESPONSE_CODE));
+        JsonObject jsonObject = getJsonObjectFromResponse(response);
+        Assert.assertEquals(jsonObject.entrySet().size(), 2);
+        Assert.assertEquals(jsonObject.get("content_type").getAsString(), "image/svg+xml");
+        byte[] actualData = Base64.getDecoder().decode(jsonObject.get("data").getAsString());
+        byte[] expectedData = IOUtils.toByteArray(getClass().getResourceAsStream("/json.svg"));
+        assertArrayEquals(expectedData, actualData);
+    }
     @Test
     public void shouldRespondSuccessToParseDirectoryRequestWhenEmpty() throws UnhandledRequestTypeException {
         DefaultGoPluginApiRequest parseDirectoryRequest = new DefaultGoPluginApiRequest("configrepo", "1.0", "parse-directory");
