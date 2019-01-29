@@ -73,6 +73,8 @@ test {
 // create a fat jar with all dependencies
 jar {
     baseName = project.name
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
 
     manifest {
         attributes 'Main-Class': 'com.tw.go.config.json.cli.JsonPluginCli'
