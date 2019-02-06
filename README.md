@@ -695,6 +695,33 @@ which usually makes more sense considering that value is stored in SCM.
 }
 ```
 
+Since GoCD `>= 19.2.0` defining new pluggable materials that are not defined 
+in the GoCD server is supported.
+
+```json
+{
+  "plugin_configuration": {
+    "id": "plugin_id",
+    "version": "1"
+  },
+  "configuration": [
+    {
+      "key": "url",
+      "value": "git@github.com:tomzo/gocd-json-config-plugin.git"
+    }
+  ],
+  "destination": "destinationDir",
+  "filter": {
+    "ignore": [
+      "dir1",
+      "dir2"
+    ]
+  },
+  "name": "myPluggableGit",
+  "type": "plugin"
+}
+```
+
 ## Configrepo
 
 This is a convenience for shorter and more consistent material declaration.
