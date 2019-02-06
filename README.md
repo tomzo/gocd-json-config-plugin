@@ -193,7 +193,7 @@ and also [official JSONs in pipeline configuration API](https://api.gocd.org/cur
     * [perforce](#perforce)
     * [tfs](#tfs)
     * [hg](#hg)
-    * [pluggable scm](#pluggable)
+    * [pluggable scm](#pluggable-scm)
     * [configrepo](#configrepo)
 
 # Environment
