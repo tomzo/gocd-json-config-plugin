@@ -193,7 +193,7 @@ and also [official JSONs in pipeline configuration API](https://api.gocd.org/cur
     * [perforce](#perforce)
     * [tfs](#tfs)
     * [hg](#hg)
-    * [pluggable scm](#pluggable)
+    * [pluggable scm](#pluggable-scm)
     * [configrepo](#configrepo)
 
 # Environment
@@ -683,6 +683,33 @@ which usually makes more sense considering that value is stored in SCM.
 ```json
 {
   "scm_id": "someScmGitRepositoryId",
+  "destination": "destinationDir",
+  "filter": {
+    "ignore": [
+      "dir1",
+      "dir2"
+    ]
+  },
+  "name": "myPluggableGit",
+  "type": "plugin"
+}
+```
+
+Since GoCD `>= 19.2.0` defining new pluggable materials that are not defined 
+in the GoCD server is supported.
+
+```json
+{
+  "plugin_configuration": {
+    "id": "plugin_id",
+    "version": "1"
+  },
+  "configuration": [
+    {
+      "key": "url",
+      "value": "git@github.com:tomzo/gocd-json-config-plugin.git"
+    }
+  ],
   "destination": "destinationDir",
   "filter": {
     "ignore": [
