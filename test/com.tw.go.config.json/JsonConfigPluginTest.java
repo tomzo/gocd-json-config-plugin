@@ -112,14 +112,22 @@ public class JsonConfigPluginTest {
         body.put(PLUGIN_SETTINGS_ENVIRONMENT_PATTERN, "*.foo.envs.json");
         request.setRequestBody(JSONUtils.toJSON(body));
 
-        assertEquals(DEFAULT_PIPELINE_PATTERN, plugin.getPipelinePattern());
-        assertEquals(DEFAULT_ENVIRONMENT_PATTERN, plugin.getEnvironmentPattern());
+        DefaultGoPluginApiRequest parseDirectoryRequest = new DefaultGoPluginApiRequest("configrepo", "1.0", "parse-directory");
+        String requestBody = "{\n" +
+                "    \"directory\":\"emptyDir\",\n" +
+                "    \"configurations\":[]\n" +
+                "}";
+        parseDirectoryRequest.setRequestBody(requestBody);
+        ParsedRequest parsed = ParsedRequest.parse(parseDirectoryRequest);
+
+        assertEquals(DEFAULT_PIPELINE_PATTERN, plugin.getPipelinePattern(parsed));
+        assertEquals(DEFAULT_ENVIRONMENT_PATTERN, plugin.getEnvironmentPattern(parsed));
 
         GoPluginApiResponse response = plugin.handle(request);
 
         assertThat(response.responseCode(), is(SUCCESS_RESPONSE_CODE));
-        assertEquals("*.foo.pipes.json", plugin.getPipelinePattern());
-        assertEquals("*.foo.envs.json", plugin.getEnvironmentPattern());
+        assertEquals("*.foo.pipes.json", plugin.getPipelinePattern(parsed));
+        assertEquals("*.foo.envs.json", plugin.getEnvironmentPattern(parsed));
     }
 
 
@@ -155,6 +163,64 @@ public class JsonConfigPluginTest {
         assertThat(pipelinePatternConfigAsJsonObject.get("required").getAsBoolean(), is(false));
         assertThat(pipelinePatternConfigAsJsonObject.get("secure").getAsBoolean(), is(false));
         assertThat(pipelinePatternConfigAsJsonObject.get("display-order").getAsInt(), is(0));
+    }
+
+    @Test
+    public void getPipelinePatternShouldReturnValueAtConfigRepoLevelIfDefined() {
+        DefaultGoPluginApiRequest parseDirectoryRequest = new DefaultGoPluginApiRequest("configrepo", "1.0", "parse-directory");
+        String requestBody = "{\n" +
+                "    \"directory\":\"emptyDir\",\n" +
+                "    \"configurations\":[" +
+                        "{" +
+                            "\"key\" : \"pipeline_pattern\"," +
+                            "\"value\" : \"**/*.goprodpipeline.json\" " +
+                        "}" +
+                    "]\n" +
+                "}";
+        parseDirectoryRequest.setRequestBody(requestBody);
+        ParsedRequest parsed = ParsedRequest.parse(parseDirectoryRequest);
+        String pattern = plugin.getPipelinePattern(parsed);
+        assertThat(pattern, is("**/*.goprodpipeline.json"));
+    }
+
+    @Test
+    public void getEnvironmentPatternShouldReturnValueAtConfigRepoLevelIfDefined() {
+        DefaultGoPluginApiRequest parseDirectoryRequest = new DefaultGoPluginApiRequest("configrepo", "1.0", "parse-directory");
+        String requestBody = "{\n" +
+                "    \"directory\":\"emptyDir\",\n" +
+                "    \"configurations\":[" +
+                        "{" +
+                            "\"key\" : \"environment_pattern\"," +
+                            "\"value\" : \"**/*.goprodenvironment.json\" " +
+                        "}" +
+                    "]\n" +
+                "}";
+        parseDirectoryRequest.setRequestBody(requestBody);
+        ParsedRequest parsed = ParsedRequest.parse(parseDirectoryRequest);
+        String pattern = plugin.getEnvironmentPattern(parsed);
+        assertThat(pattern, is("**/*.goprodenvironment.json"));
+    }
+
+    @Test
+    public void getEnvironmentPatternShouldReturnValueAtConfigRepoLevelIfBothPatternsDefined() {
+        DefaultGoPluginApiRequest parseDirectoryRequest = new DefaultGoPluginApiRequest("configrepo", "1.0", "parse-directory");
+        String requestBody = "{\n" +
+                "    \"directory\":\"emptyDir\",\n" +
+                "    \"configurations\":[" +
+                    "{" +
+                        "\"key\" : \"environment_pattern\"," +
+                        "\"value\" : \"**/*.goprodenvironment.json\" " +
+                    "}," +
+                    "{" +
+                        "\"key\" : \"pipeline_pattern\"," +
+                        "\"value\" : \"**/*.goprodpipeline.json\" " +
+                    "}" +
+                "]\n" +
+                "}";
+        parseDirectoryRequest.setRequestBody(requestBody);
+        ParsedRequest parsed = ParsedRequest.parse(parseDirectoryRequest);
+        String pattern = plugin.getEnvironmentPattern(parsed);
+        assertThat(pattern, is("**/*.goprodenvironment.json"));
     }
 
     private JsonObject getJsonObjectFromResponse(GoPluginApiResponse response) {
