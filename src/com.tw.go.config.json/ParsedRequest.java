@@ -98,8 +98,6 @@ class ParsedRequest {
 
                     if (key.equals(keyName)) {
                         value = configObj.getAsJsonPrimitive("value").getAsString();
-                    } else {
-                        throw new RequestParseException(format(INVALID_REPO_CONFIGURATION_KEY, key));
                     }
                 }
             }

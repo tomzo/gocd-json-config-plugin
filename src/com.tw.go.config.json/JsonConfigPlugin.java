@@ -94,14 +94,20 @@ public class JsonConfigPlugin implements GoPlugin, ConfigRepoMessages {
         }
     }
 
-    String getPipelinePattern() {
+    String getPipelinePattern(ParsedRequest parseDirectoryReq) {
+        String configRepoLevelPattern = parseDirectoryReq.getConfigurationKey(PLUGIN_SETTINGS_PIPELINE_PATTERN);
+        if(!isBlank(configRepoLevelPattern))
+            return configRepoLevelPattern;
         if (null != settings && !isBlank(settings.getPipelinePattern())) {
             return settings.getPipelinePattern();
         }
         return DEFAULT_PIPELINE_PATTERN;
     }
 
-    String getEnvironmentPattern() {
+    String getEnvironmentPattern(ParsedRequest parseDirectoryReq) {
+        String configRepoLevelPattern = parseDirectoryReq.getConfigurationKey(PLUGIN_SETTINGS_ENVIRONMENT_PATTERN);
+        if(!isBlank(configRepoLevelPattern))
+            return configRepoLevelPattern;
         if (null != settings && !isBlank(settings.getEnvironmentPattern())) {
             return settings.getEnvironmentPattern();
         }
@@ -147,8 +153,8 @@ public class JsonConfigPlugin implements GoPlugin, ConfigRepoMessages {
 
     private GoPluginApiResponse handleParseContentRequest(GoPluginApiRequest request) {
         return handlingErrors(() -> {
-            FilenameMatcher matcher = new FilenameMatcher(getPipelinePattern(), getEnvironmentPattern());
             ParsedRequest parsed = ParsedRequest.parse(request);
+            FilenameMatcher matcher = new FilenameMatcher(getPipelinePattern(parsed), getEnvironmentPattern(parsed));
             Map<String, String> contents = parsed.getParam("contents");
 
             JsonConfigCollection result = new JsonConfigCollection();
@@ -201,7 +207,7 @@ public class JsonConfigPlugin implements GoPlugin, ConfigRepoMessages {
             ConfigDirectoryScanner scanner = new AntDirectoryScanner();
 
             ConfigDirectoryParser configDirectoryParser = new ConfigDirectoryParser(
-                    scanner, parser, getPipelinePattern(), getEnvironmentPattern()
+                    scanner, parser, getPipelinePattern(parsed), getEnvironmentPattern(parsed)
             );
 
             JsonConfigCollection config = configDirectoryParser.parseDirectory(baseDir);
