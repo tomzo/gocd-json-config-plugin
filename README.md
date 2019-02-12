@@ -123,7 +123,7 @@ sudo bash -c "`curl -L https://raw.githubusercontent.com/ai-traders/ide/master/i
 
 Add `Idefile` in your project with following content
 ```
-IDE_DOCKER_IMAGE=tomzo/gocd-json-ide:0.3.6
+IDE_DOCKER_IMAGE=tomzo/gocd-json-ide:<plugin-version>
 ```
 
 To validate files run:
@@ -146,7 +146,7 @@ watch gocd-json syntax mypipe.gopipeline.json
 ## Usage with docker only
 
 ```
-docker run -ti --rm --volume $(pwd):/ide/work tomzo/gocd-json-ide:0.3.6 bash
+docker run -ti --rm --volume $(pwd):/ide/work tomzo/gocd-json-ide:<plugin-version> bash
 ```
 Then you have an interactive shell as above.
 
@@ -695,7 +695,7 @@ which usually makes more sense considering that value is stored in SCM.
 }
 ```
 
-Since GoCD `>= 19.2.0` defining new pluggable materials that are not defined 
+Since GoCD `>= 19.2.0` defining new pluggable materials that are not defined
 in the GoCD server is supported.
 
 ```json
@@ -911,7 +911,19 @@ Create issues and PRs if
 
 There has been a long effort to make it possible to store configuration in SCMs,
 so obviously there will be some errors in lots of new code. Please file issues
-here or ask on [gocd gitter chat](https://gitter.im/gocd/gocd).
+here or ask on [gitter chat for config-repo plugins](https://gitter.im/gocd/configrepo-plugins).
+
+
+## Versioning
+
+We use semantic versioning.
+
+If you are submitting a new feature then please run a major version bump by
+```
+./tasks.sh set_version 0.X.0
+```
+
+If you are submitting a fix, then do not change any versions as patch bump is made right after each release.
 
 # License and Authors
 

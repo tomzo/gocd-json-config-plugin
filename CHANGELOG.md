@@ -1,3 +1,8 @@
+### 0.3.7 (2019-Feb-12)
+
+* fix repo-level configuration not being applied \#40
+* Generate reproducible binaries \#38
+
 # 0.3.6 (21 Jan 2019)
 
 * Changed JSON keys returned by `get-capabilities` call

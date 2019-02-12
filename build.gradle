@@ -6,13 +6,13 @@ plugins {
     id "com.github.jk1.dependency-license-report"
 }
 
-group = 'com.thoughtworks.go'
-version = '0.3.6'
+group = 'cd.go.plugin.config.json'
+version "0.3.7"
 
 apply plugin: 'java'
 
 project.ext.pluginDesc = [
-        version    : project.version,
+        version: project.version,
         goCdVersion: '18.12.0'
 ]
 
