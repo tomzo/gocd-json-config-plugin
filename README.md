@@ -170,7 +170,7 @@ and also [official JSONs in pipeline configuration API](https://api.gocd.org/cur
 1. [Pipeline](#pipeline)
     * [Locking](#pipeline-locking)
     * [Mingle](#mingle)
-    * [Tracking tool](#tracking tool)
+    * [Tracking tool](#tracking-tool)
     * [Timer](#timer)
 1. [Stage](#stage)
     * [Approval](#approval)
