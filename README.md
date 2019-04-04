@@ -18,36 +18,19 @@ to find out what GoCD's configuration repositories are.
 
 ## Quickstart
 
-Make sure you are running at least `16.8.0` GoCD server.
-
 ### Installation
 
-If you're using a GoCD version *older than 17.8.0*, you need to install the plugin in the GoCD server.
+GoCD versions newer than `17.8.0` already have the plugin bundled. You don't need to do anything else.
 
-You'll have to drop `.jar` to `plugins/external` [directory](https://docs.gocd.org/current/extension_points/plugin_user_guide.html) in your server installation.
-Plugin jars can be downloaded from [releases page](https://github.com/tomzo/gocd-json-config-plugin/releases).
+If using an older version, you'll need to drop the plugin JAR to `plugins/external` [directory](https://docs.gocd.org/current/extension_points/plugin_user_guide.html) in your server installation.
+
+Plugin JARs can be downloaded from [releases page](https://github.com/tomzo/gocd-json-config-plugin/releases).
 
 ### Add configuration repository
 
-There is no UI to add configuration repositories so you'll have to edit the config XML.
-You will need to add `config-repo` section within `config-repos`.
-If `config-repos` does not exist yet then you add it **above first `<pipelines />` and `<artifactStores/>`**.
+Follow [the GoCD documentation](https://docs.gocd.org/current/advanced_usage/pipelines_as_code.html#storing-pipeline-configuration-in-json) to add a new configuration repository.
 
-To add all configurations from git repository `https://github.com/tomzo/gocd-json-config-example.git`
-a section like this should be added:
-
-```xml
-...
-<config-repos>
-   <config-repo pluginId="json.config.plugin" id="repo1">
-     <git url="https://github.com/tomzo/gocd-json-config-example.git" />
-   </config-repo>
-</config-repos>
-...
-<artifactStores />
-<pipelines />
-...
-```
+You can use the example repository at: `https://github.com/tomzo/gocd-json-config-example.git`
 
 ## Configuration files
 
@@ -69,14 +52,24 @@ you can find examples of correct environments at the [bottom](#environment).
 
 ### Format version
 
-Please note that it is now recommended to declare `format_version` in each `*.gopipeline.json` or `*.goenvironment.json` file.
-Version `3` will be introduced in GoCD 18.7.0
-Currently it is recommended to declare consistent version in all your files:
-```
-{
-  "format_version" : 3
-}
-```
+Please note that it is now recommended to declare the _same_ `format_version` in each `*.gopipeline.json` or `*.goenvironment.json` file.
+
+#### GoCD server version from 19.3.0 and beyond
+
+Supports `format_version` value of `4`. In this version, support has been added to control the [display order of pipelines](#display-order-of-pipelines).
+
+This server version also supports `format_version` of `3` and `2`. Using a newer `format_version` includes all the behavior of the previous versions too.
+
+#### GoCD server version from 18.7.0 to 19.2.0
+
+Supports `format_version` value of `3`. In this version [fetch artifact](#fetch) format was changed to include `artifact_origin`.
+
+This server version also supports `format_version` of `2`. Using a newer `format_version` includes all the behavior of the previous versions too.
+
+#### GoCD server version up to 18.6.0
+
+Supports `format_version` value of `2`. In this version [pipeline locking](#pipeline-locking) behavior was changed.
+
 
 # Syntax checking
 
@@ -169,9 +162,10 @@ and also [official JSONs in pipeline configuration API](https://api.gocd.org/cur
 1. [Environment variables](#environment-variables)
 1. [Pipeline](#pipeline)
     * [Locking](#pipeline-locking)
-    * [Mingle](#mingle)
-    * [Tracking tool](#tracking-tool)
+    * [Controlling the display order](#display-order-of-pipelines)
     * [Timer](#timer)
+    * [Tracking tool](#tracking-tool)
+    * [Mingle](#mingle)
 1. [Stage](#stage)
     * [Approval](#approval)
 1. [Job](#job)
@@ -310,14 +304,38 @@ Expected since GoCD v17.12, you need to use `lock_behavior` rather than `enable_
  * `unlockWhenFinished` -
  * `none` - same `enable_pipeline_locking: false`
 
+<a name="display-order-of-pipelines"/>
+### Controlling the display order
 
-### Mingle
+When `format_version` is `4` (see [above](#format-version)), the order of display of pipelines on the GoCD dashboard can be influenced by setting the `display_order_weight` property.
+
+- This is an integer property and the pipelines in a pipeline group will be ordered by this value.
+- The default value for this property is `-1`.
+- Pipelines defined in GoCD's config XML will also default to -1.
+- If multiple pipelines have the same `display_order_weight` value, their order relative to each other will be indeterminate.
 
 ```json
 {
-    "base_url": "https://mingle.example.com",
-    "project_identifier": "foobar_widgets",
-    "mql_grouping_conditions": "status > 'In Dev'"
+  "name": "pipeline1",
+  "group": "pg1",
+  "display_order_weight": 10
+},
+{
+  "name": "pipeline2",
+  "group": "pg1",
+  "display_order_weight": -10
+}
+```
+
+In the above example, since both pipelines are in the same group, `pipeline2` will be shown ahead of `pipeline1`. If any pipelines are defined in the GoCD config XML, then they will appear in between these two pipelines.
+
+
+### Timer
+
+```json
+{
+    "spec": "0 0 22 ? * MON-FRI",
+    "only_on_changes": true
 }
 ```
 
@@ -330,12 +348,13 @@ Expected since GoCD v17.12, you need to use `lock_behavior` rather than `enable_
 }
 ```
 
-### Timer
+### Mingle
 
 ```json
 {
-    "spec": "0 0 22 ? * MON-FRI",
-    "only_on_changes": true
+    "base_url": "https://mingle.example.com",
+    "project_identifier": "foobar_widgets",
+    "mql_grouping_conditions": "status > 'In Dev'"
 }
 ```
 
