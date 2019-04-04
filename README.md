@@ -305,6 +305,7 @@ Expected since GoCD v17.12, you need to use `lock_behavior` rather than `enable_
  * `none` - same `enable_pipeline_locking: false`
 
 <a name="display-order-of-pipelines"/>
+
 ### Controlling the display order
 
 When `format_version` is `4` (see [above](#format-version)), the order of display of pipelines on the GoCD dashboard can be influenced by setting the `display_order_weight` property.
