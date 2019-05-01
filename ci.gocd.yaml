@@ -16,7 +16,7 @@ pipelines:
                destination: build/libs
           tasks:
            - exec:
-               command: ide
+               command: dojo
                arguments:
                 - gradle test jar
       - docker:
