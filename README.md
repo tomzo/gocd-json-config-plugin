@@ -71,77 +71,32 @@ This server version also supports `format_version` of `2`. Using a newer `format
 Supports `format_version` value of `2`. In this version [pipeline locking](#pipeline-locking) behavior was changed.
 
 
-# Syntax checking
+# Validation
 
-Since `0.3.2` plugin is an executable and supports basic syntax checking.
+There is an ongoing effort to allow in-depth validation of configuration **before pushing configuration to the source control**. This is provided by [GoCD's preflight API](https://api.gocd.org/current/#preflight-check-of-config-repo-configurations) and [gocd-cli][https://github.com/gocd-contrib/gocd-cli](https://github.com/gocd-contrib/gocd-cli).
 
-## Usage with java installed
+You have several options to configure validation tools on your workstation:
+ * If you have a local docker daemon, use the [gocd-cli-dojo](https://github.com/gocd-contrib/docker-gocd-cli-dojo) image. Follow the [setup instructions](https://github.com/gocd-contrib/docker-gocd-cli-dojo#setup) in the image readme.
+ * If you don't want to use docker, you'll need to [setup `gocd-cli` on your host](https://github.com/gocd-contrib/gocd-cli).
 
-You need to download the `jar` from releases page and place it somewhere convenient.
-For example `/usr/lib/gocd-json-plugin/json-config-plugin.jar`.
-Then to validate your `gopipeline.json` file run something like:
-```
-java -jar /usr/lib/gocd-json-plugin/json-config-plugin.jar syntax mypipe.gopipeline.json
-```
+Either way you'll have `gocd` binary in your `PATH` or inside the docker container.
 
-## Usage with `gocd` command-line helper
+## Syntax validation
 
-This is a product in development, so its command syntax is not stable and there are no distributed binaries yet.
-
-The `gocd` tool is built in [golang](https://golang.org/) so you will need to familiarize yourself with how to set up your [go workspace](https://golang.org/doc/code.html#Workspaces).
-
-Build the `gocd` binary:
-
+This will check general validity of the yaml file, without talking to the GoCD server:
 ```bash
-go get github.com/gocd-contrib/gocd-cli
-cd ${GOPATH:-~/go}/src/github.com/gocd-contrib/gocd-cli
-./build.sh
+gocd configrepo --json syntax ci.gopipeline.json
 ```
 
-Follow the steps on [https://github.com/gocd-contrib/gocd-cli](https://github.com/gocd-contrib/gocd-cli) to install the plugin jar to the correct place.
+## Preflight validation
 
-Then:
+This command will parse and submit your json file to the configured GoCD server.
+```
+gocd configrepo preflight --json -r gocd-json-config-example *.gopipeline.json
+```
+Where `-r` is the configuration repository id, which you have earlier configured on GoCD server. You can check it on config repos page of your GoCD server, at `/go/admin/config_repos`. It in the upper left corner of each config repo.
+![config repo id](json_config_repo_id.png)
 
-```bash
-./gocd configrepo syntax -i json.config.plugin /path/to/your-pipeline.gopipeline.json
-```
-
-## Usage with IDE and docker
-
-[IDE](https://github.com/ai-traders/ide) is a bash script, a cli wrapper around docker to help with running development tasks in docker.
-You can install the `ide` script so that it is available on the PATH with:
-```
-sudo bash -c "`curl -L https://raw.githubusercontent.com/ai-traders/ide/master/install.sh`"
-```
-
-Add `Idefile` in your project with following content
-```
-IDE_DOCKER_IMAGE=tomzo/gocd-json-ide:<plugin-version>
-```
-
-To validate files run:
-```
-ide gocd-json syntax mypipe.gopipeline.json
-```
-
-Personally, I recommend the following project structure:
-
- * `gocd/` directory for all your GoCD configuration files.
- * `gocd/Idefile` file pointing which docker image can be used to validate configuration.
-
-Then when working with gocd pipelines config, you can run from the root of your project
-```
-cd gocd
-ide      # will open interactive shell
-watch gocd-json syntax mypipe.gopipeline.json
-```
-
-## Usage with docker only
-
-```
-docker run -ti --rm --volume $(pwd):/ide/work tomzo/gocd-json-ide:<plugin-version> bash
-```
-Then you have an interactive shell as above.
 
 #### Implementation note
 
