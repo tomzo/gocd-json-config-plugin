@@ -11,69 +11,45 @@ in version control systems supported by GoCD (git, svn, mercurial, etc.).
 See [this document](https://docs.gocd.org/current/advanced_usage/pipelines_as_code.html)
 to find out what GoCD's configuration repositories are.
 
-### Resources:
+# Table of contents
 
- * You can find an example repository at https://github.com/tomzo/gocd-json-config-example.git
- * Original GoCD [issue](https://github.com/gocd/gocd/issues/1133) on GitHub
+1. [Setup](#setup)
+1. [File pattern](#file-pattern)
+1. [Validation](#Validation)
+1. **[Format reference](#JSON-Configuration-reference)**
+1. [Format version](#Format-version)
+1. [Issues and questions](#Issues-and-questions)
+1. [Development](#Development)
+1. [License](#License)
 
-## Quickstart
+# Setup
 
-### Installation
+**Step 1**: GoCD versions newer than `17.8.0` already have the plugin bundled. You don't need to install anything.
 
-GoCD versions newer than `17.8.0` already have the plugin bundled. You don't need to do anything else.
+If you're using GoCD version *older than 17.8.0*, you need to install the plugin in the GoCD server. Download it from
+[the releases page](https://github.com/tomzo/gocd-json-config-plugin/releases) and place it on the GoCD server in
+`plugins/external` [directory](https://docs.gocd.org/current/extension_points/plugin_user_guide.html).
 
-If using an older version, you'll need to drop the plugin JAR to `plugins/external` [directory](https://docs.gocd.org/current/extension_points/plugin_user_guide.html) in your server installation.
 
-Plugin JARs can be downloaded from [releases page](https://github.com/tomzo/gocd-json-config-plugin/releases).
+**Step 2**: Follow [the GoCD documentation](https://docs.gocd.org/current/advanced_usage/pipelines_as_code.html#storing-pipeline-configuration-in-json) to add a new configuration repository.
 
-### Add configuration repository
+You can use the example repository at: `https://github.com/tomzo/gocd-json-config-example.git` as a reference.
 
-Follow [the GoCD documentation](https://docs.gocd.org/current/advanced_usage/pipelines_as_code.html#storing-pipeline-configuration-in-json) to add a new configuration repository.
+In your config repo (`tomzo/gocd-json-config-example.git` in this case), ensure that your GoCD json config is suffixed with `.gopipeline.json` for pipelines and `.goenvironment.json` for environments. Give it a minute or so for the polling to happen. Once that happens, you should see your pipeline(s) on your dashboard.
 
-You can use the example repository at: `https://github.com/tomzo/gocd-json-config-example.git`
-
-## Configuration files
+## File pattern
 
 Using this plugin you can store any number of pipeline or environment
-configurations without a versioned repository like git.
+configurations in a versioned repository like git.
 
 By default **pipelines** should be stored in `*.gopipeline.json` files
 and **environments** should be stored in `*.goenvironment.json` files.
 
 The file name pattern can be changed on plugin configuration page.
 
-## Format
-
-The pipeline configuration files should be stored in format *similar* to
-one exposed by [GoCD API](https://api.gocd.org/current#get-pipeline-config).
-
-The format of environment configuration files is much simpler,
-you can find examples of correct environments at the [bottom](#environment).
-
-### Format version
-
-Please note that it is now recommended to declare the _same_ `format_version` in each `*.gopipeline.json` or `*.goenvironment.json` file.
-
-#### GoCD server version from 19.3.0 and beyond
-
-Supports `format_version` value of `4`. In this version, support has been added to control the [display order of pipelines](#display-order-of-pipelines).
-
-This server version also supports `format_version` of `3` and `2`. Using a newer `format_version` includes all the behavior of the previous versions too.
-
-#### GoCD server version from 18.7.0 to 19.2.0
-
-Supports `format_version` value of `3`. In this version [fetch artifact](#fetch) format was changed to include `artifact_origin`.
-
-This server version also supports `format_version` of `2`. Using a newer `format_version` includes all the behavior of the previous versions too.
-
-#### GoCD server version up to 18.6.0
-
-Supports `format_version` value of `2`. In this version [pipeline locking](#pipeline-locking) behavior was changed.
-
-
 # Validation
 
-There is an ongoing effort to allow in-depth validation of configuration **before pushing configuration to the source control**. This is provided by [GoCD's preflight API](https://api.gocd.org/current/#preflight-check-of-config-repo-configurations) and [gocd-cli][https://github.com/gocd-contrib/gocd-cli](https://github.com/gocd-contrib/gocd-cli).
+There is an ongoing effort to allow in-depth validation of configuration **before pushing configuration to the source control**. This is provided by [GoCD's preflight API](https://api.gocd.org/current/#preflight-check-of-config-repo-configurations) and [gocd-cli](https://github.com/gocd-contrib/gocd-cli).
 
 You have several options to configure validation tools on your workstation:
  * If you have a local docker daemon, use the [gocd-cli-dojo](https://github.com/gocd-contrib/docker-gocd-cli-dojo) image. Follow the [setup instructions](https://github.com/gocd-contrib/docker-gocd-cli-dojo#setup) in the image readme.
@@ -94,25 +70,18 @@ This command will parse and submit your json file to the configured GoCD server.
 ```
 gocd configrepo preflight --json -r gocd-json-config-example *.gopipeline.json
 ```
-Where `-r` is the configuration repository id, which you have earlier configured on GoCD server. You can check it on config repos page of your GoCD server, at `/go/admin/config_repos`. It in the upper left corner of each config repo.
+Where `-r` is the configuration repository id, which you have earlier configured on GoCD server. You can check it on config repos page of your GoCD server, at `/go/admin/config_repos`. It is in the upper left corner of each config repo.
 ![config repo id](json_config_repo_id.png)
 
+# JSON Configuration reference
 
-#### Implementation note
+The pipeline configuration files should be stored in format *similar* to
+one exposed by [GoCD API](https://api.gocd.org/current#get-pipeline-config).
 
-This plugin leverages JSON message format used internally for GoCD server
-and plugin communication.
+The format of environment configuration files is much simpler,
+you can find examples of correct environments at the [bottom](#environment).
 
-GoCD pipeline and environment configuration has very deep structure. So instead
-of reading a very long schema, below you can find examples of all configuration elements.
-
-It is exactly like documented [here](https://github.com/tomzo/documentation/blob/1133-configrepo-extension/developer/writing_go_plugins/configrepo/version_1_0/config_objects.md)
-
-It is **close to** [official xml schema](https://docs.gocd.org/16.1.0/configuration/configuration_reference.html)
-and also [official JSONs in pipeline configuration API](https://api.gocd.org/current/#get-pipeline-config)
-
-## JSON Configuration objects
-
+1. [Format version](#format-version)
 1. [Environment](#environment)
 1. [Environment variables](#environment-variables)
 1. [Pipeline](#pipeline)
@@ -144,6 +113,28 @@ and also [official JSONs in pipeline configuration API](https://api.gocd.org/cur
     * [hg](#hg)
     * [pluggable scm](#pluggable-scm)
     * [configrepo](#configrepo)
+
+
+### Format version
+
+Please note that it is now recommended to declare the _same_ `format_version` in each `*.gopipeline.json` or `*.goenvironment.json` file.
+
+#### GoCD server version from 19.3.0 and beyond
+
+Supports `format_version` value of `4`. In this version, support has been added to control the [display order of pipelines](#display-order-of-pipelines).
+
+This server version also supports `format_version` of `3` and `2`. Using a newer `format_version` includes all the behavior of the previous versions too.
+
+#### GoCD server version from 18.7.0 to 19.2.0
+
+Supports `format_version` value of `3`. In this version [fetch artifact](#fetch) format was changed to include `artifact_origin`.
+
+This server version also supports `format_version` of `2`. Using a newer `format_version` includes all the behavior of the previous versions too.
+
+#### GoCD server version up to 18.6.0
+
+Supports `format_version` value of `2`. In this version [pipeline locking](#pipeline-locking) behavior was changed.
+
 
 # Environment
 
@@ -908,17 +899,18 @@ Then enter a docker container with java and gradle pre-installed, by running fol
 dojo
 ```
 
-# Contributing
+# Issues and questions
 
-Create issues and PRs if
- * something does not work as you expect it,
- * documentation is not good enough
- * you have questions about GoCD behavior with remote configuration
+ * If you have **questions on usage**, please ask them on the [gitter chat room dedicated for configrepo-plugins](https://gitter.im/gocd/configrepo-plugins?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+ * If you think there is a bug, or you have an idea for a feature and *you are not sure if it's plugin's or [GoCD](https://github.com/gocd/gocd/issues) fault/responsibity*, please ask on the chat first too.
 
-There has been a long effort to make it possible to store configuration in SCMs,
-so obviously there will be some errors in lots of new code. Please file issues
-here or ask on [gitter chat for config-repo plugins](https://gitter.im/gocd/configrepo-plugins).
+Please note this brief overview of what is done by the plugin:
+ * parsing files into json when GoCD server asks for it.
 
+And this is done by the GoCD server:
+ * complex logic merging multiple config repo sources and XML
+ * validation of pipelines/stages/jobs/tasks domain
+ * any UI rendering
 
 ## Versioning
 
@@ -931,9 +923,19 @@ If you are submitting a new feature then please run a major version bump by
 
 If you are submitting a fix, then do not change any versions as patch bump is made right after each release.
 
-# License and Authors
 
-License: Apache 2.0
+# License
 
-Authors:
- * Tomasz Sętkowski <tom@ai-traders.com>
+Copyright 2019 Tomasz Sętkowski
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
