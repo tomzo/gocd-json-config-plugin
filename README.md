@@ -75,11 +75,11 @@ Where `-r` is the configuration repository id, which you have earlier configured
 
 # JSON Configuration reference
 
-The pipeline configuration files should be stored in format *similar* to
+The **pipeline configuration** files should be stored in format *similar* to
 one exposed by [GoCD API](https://api.gocd.org/current#get-pipeline-config).
 
-The format of environment configuration files is much simpler,
-you can find examples of correct environments at the [bottom](#environment).
+The format of **environment configuration** files is much simpler,
+you can find examples of correct environments [below](#environment).
 
 1. [Format version](#format-version)
 1. [Environment](#environment)
