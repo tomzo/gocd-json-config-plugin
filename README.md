@@ -49,6 +49,8 @@ The file name pattern can be changed on plugin configuration page.
 
 # Validation
 
+*You may find this [introductory blog post useful](https://kudulab.io/posts/gocd-preflight-validation/).*
+
 There is an ongoing effort to allow in-depth validation of configuration **before pushing configuration to the source control**. This is provided by [GoCD's preflight API](https://api.gocd.org/current/#preflight-check-of-config-repo-configurations) and [gocd-cli](https://github.com/gocd-contrib/gocd-cli).
 
 You have several options to configure validation tools on your workstation:
