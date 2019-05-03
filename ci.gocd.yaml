@@ -17,9 +17,10 @@ pipelines:
                destination: build/libs
           tasks:
            - exec:
-               command: dojo
+               command: /bin/bash
                arguments:
-                - gradle test jar
+                - -c
+                - ./tasks.sh build
       - release:
           approval: manual
           clean_workspace: true
