@@ -49,12 +49,12 @@ pipelines:
                 - exec:
                     command: /bin/bash
                     arguments:
-                      - ./tasks.sh
-                      - set_version
+                      - -c
+                      - ./tasks.sh set_version
                 - exec:
                     command: /bin/bash
-                      - ./tasks.sh
-                      - commit
+                      - -c
+                      - ./tasks.sh commit
                 - exec:
                     command: git
                     arguments:
