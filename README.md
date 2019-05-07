@@ -119,7 +119,13 @@ you can find examples of correct environments at the [bottom](#environment).
 
 Please note that it is now recommended to declare the _same_ `format_version` in each `*.gopipeline.json` or `*.goenvironment.json` file.
 
-#### GoCD server version from 19.3.0 and beyond
+#### GoCD server version from 19.4.0 and beyond
+
+Supports `format_version` value of `5`. In this version, support of `username` and `encrypted_password` for [git](#git-material-update) and [hg](#hg-material-update) material has been added.
+
+Using a newer `format_version` includes all the behavior of the previous versions too.
+
+#### GoCD server version from 19.3.0 to 19.4.0
 
 Supports `format_version` value of `4`. In this version, support has been added to control the [display order of pipelines](#display-order-of-pipelines).
 
@@ -530,6 +536,22 @@ All scm materials can have filter object:
   "shallow_clone": true
 }
 ```
+<a name="git-material-update"/>
+
+For **GoCD >= 19.4.0 and `format_version: 5` and above**:
+
+You need to specify `username` and `encrypted_password` explicitly as such
+
+```json
+{
+  "url": "http://my.git.repository.com",
+  "branch": "feature12",
+  "username": "user1",
+  "encrypted_password": "encrypted_value"
+}
+```
+
+Instead of `encrypted_password` you may specify `password` but `encrypted_password` makes more sense considering that the value is stored in SCM.
 
 ## Svn
 
@@ -537,7 +559,7 @@ All scm materials can have filter object:
 {
   "url": "http://svn",
   "username": "user1",
-  "password": "pass1",
+  "encrypted_password": "encrypted_value",
   "check_externals": true,
   "filter": {
     "ignore": [
@@ -552,8 +574,7 @@ All scm materials can have filter object:
 }
 ```
 
-Instead of plain `password` you may specify `encrypted_password` with encrypted content
-which usually makes more sense considering that value is stored in SCM.
+Instead of `encrypted_password` you may specify `password` but `encrypted_password` makes more sense considering that the value is stored in SCM.
 
 ## Hg
 
@@ -572,6 +593,21 @@ which usually makes more sense considering that value is stored in SCM.
   "type": "hg"
 }
 ```
+<a name="hg-material-update"/>
+
+For **GoCD >= 19.4.0 and `format_version: 5` and above**:
+
+You need to specify `username` and `encrypted_password` explicitly as such
+
+```json
+{
+  "url": "repos/myhg",
+  "username": "user1",
+  "encrypted_password": "encrypted_value"
+}
+```
+
+Instead of `encrypted_password` you may specify `password` but `encrypted_password` makes more sense considering that the value is stored in SCM.
 
 ## Perforce
 
@@ -579,7 +615,7 @@ which usually makes more sense considering that value is stored in SCM.
 {
   "port": "10.18.3.102:1666",
   "username": "user1",
-  "password": "pass1",
+  "encrypted_password": "encrypted_value",
   "use_tickets": false,
   "view": "//depot/dev/src...          //anything/src/...",
   "filter": {
@@ -595,8 +631,7 @@ which usually makes more sense considering that value is stored in SCM.
 }
 ```
 
-Instead of plain `password` you may specify `encrypted_password` with encrypted content
-which usually makes more sense considering that value is stored in SCM.
+Instead of `encrypted_password` you may specify `password` but `encrypted_password` makes more sense considering that the value is stored in SCM.
 
 ## Tfs
 
@@ -605,7 +640,7 @@ which usually makes more sense considering that value is stored in SCM.
   "url": "url3",
   "username": "user4",
   "domain": "example.com",
-  "password": "pass",
+  "encrypted_password": "encrypted_value",
   "project": "projectDir",
   "filter": {
     "ignore": [
@@ -620,8 +655,7 @@ which usually makes more sense considering that value is stored in SCM.
 }
 ```
 
-Instead of plain `password` you may specify `encrypted_password` with encrypted content
-which usually makes more sense considering that value is stored in SCM.
+Instead of `encrypted_password` you may specify `password` but `encrypted_password` makes more sense considering that the value is stored in SCM.
 
 ## Dependency
 
