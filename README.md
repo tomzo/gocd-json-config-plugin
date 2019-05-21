@@ -121,7 +121,7 @@ Please note that it is now recommended to declare the _same_ `format_version` in
 
 #### GoCD server version from 19.4.0 and beyond
 
-Supports `format_version` value of `5`. In this version, support of `username` and `encrypted_password` for [git](#git-material-update) and [hg](#hg-material-update) material has been added.
+Supports `format_version` value of `5`. In this version, support of `username` and `encrypted_password` for [git](#git-material-update) and [hg](#hg-material-update) material has been added. In addition to that, [hg](#hg-material-update) will also support `branch` attribute.
 
 Using a newer `format_version` includes all the behavior of the previous versions too.
 
@@ -533,14 +533,16 @@ All scm materials can have filter object:
   "auto_update": false,
   "name": "gitMaterial1",
   "type": "git",
-  "shallow_clone": true
+  "shallow_clone": true,
+  "username": "user1",
+  "encrypted_password": "encrypted_value"
 }
 ```
 <a name="git-material-update"/>
 
 For **GoCD >= 19.4.0 and `format_version: 5` and above**:
 
-You need to specify `username` and `encrypted_password` explicitly as such
+You are advised to utilize `username` and `encrypted_password` for passing in material credentials as:
 
 ```json
 {
@@ -590,14 +592,17 @@ Instead of `encrypted_password` you may specify `password` but `encrypted_passwo
   "destination": "dir1",
   "auto_update": false,
   "name": "hgMaterial1",
-  "type": "hg"
+  "type": "hg",
+  "username": "user1",
+  "encrypted_password": "encrypted_value",
+  "branch": "feature"
 }
 ```
 <a name="hg-material-update"/>
 
 For **GoCD >= 19.4.0 and `format_version: 5` and above**:
 
-You need to specify `username` and `encrypted_password` explicitly as such
+You are advised to utilize `username` and `encrypted_password` for passing in material credentials as:
 
 ```json
 {
@@ -606,8 +611,15 @@ You need to specify `username` and `encrypted_password` explicitly as such
   "encrypted_password": "encrypted_value"
 }
 ```
-
 Instead of `encrypted_password` you may specify `password` but `encrypted_password` makes more sense considering that the value is stored in SCM.
+
+In addition to that, you can also leverage `branch` attribute to specify the branch for material
+
+```json
+{
+  "branch": "feature"
+}
+```
 
 ## Perforce
 
