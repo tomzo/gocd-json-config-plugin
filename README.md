@@ -553,7 +553,14 @@ You are advised to utilize `username` and `encrypted_password` for passing in ma
 }
 ```
 
-Instead of `encrypted_password` you may specify `password` but `encrypted_password` makes more sense considering that the value is stored in SCM.
+- Instead of `encrypted_password` you may specify `password` but `encrypted_password` makes more sense considering that the value is stored in SCM.
+- Specifying credentials both in `attributes` and `url` will result in a validation error e.g.
+  ```log
+    INVALID MERGED CONFIGURATION
+    Number of errors: 1+
+    1. Ambiguous credentials, must be provided either in URL or as attributes.;;
+    - For Config Repo: https://your.config.repo.url at cbb047d78c239ab23b9565099e800c6fe4cc0anc
+  ```
 
 ## Svn
 
@@ -611,7 +618,15 @@ You are advised to utilize `username` and `encrypted_password` for passing in ma
   "encrypted_password": "encrypted_value"
 }
 ```
-Instead of `encrypted_password` you may specify `password` but `encrypted_password` makes more sense considering that the value is stored in SCM.
+
+- Instead of `encrypted_password` you may specify `password` but `encrypted_password` makes more sense considering that the value is stored in SCM.
+- Specifying credentials both in `attributes` and `url` will result in a validation error e.g.
+  ```log
+    INVALID MERGED CONFIGURATION
+    Number of errors: 1+
+    1. Ambiguous credentials, must be provided either in URL or as attributes.;;
+    - For Config Repo: https://your.config.repo.url at cbb047d78c239ab23b9565099e800c6fe4cc0anc
+  ```
 
 In addition to that, you can also leverage `branch` attribute to specify the branch for material
 
