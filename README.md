@@ -121,7 +121,13 @@ you can find examples of correct environments [below](#environment).
 
 Please note that it is now recommended to declare the _same_ `format_version` in each `*.gopipeline.json` or `*.goenvironment.json` file.
 
-#### GoCD server version from 19.3.0 and beyond
+#### GoCD server version from 19.4.0 and beyond
+
+Supports `format_version` value of `5`. In this version, support of `username` and `encrypted_password` for [git](#git-material-update) and [hg](#hg-material-update) material has been added. In addition to that, [hg](#hg-material-update) will also support `branch` attribute.
+
+Using a newer `format_version` includes all the behavior of the previous versions too.
+
+#### GoCD server version from 19.3.0 to 19.4.0
 
 Supports `format_version` value of `4`. In this version, support has been added to control the [display order of pipelines](#display-order-of-pipelines).
 
@@ -529,9 +535,34 @@ All scm materials can have filter object:
   "auto_update": false,
   "name": "gitMaterial1",
   "type": "git",
-  "shallow_clone": true
+  "shallow_clone": true,
+  "username": "user1",
+  "encrypted_password": "encrypted_value"
 }
 ```
+<a name="git-material-update"/>
+
+For **GoCD >= 19.4.0 and `format_version: 5` and above**:
+
+You are advised to utilize `username` and `encrypted_password` for passing in material credentials as:
+
+```json
+{
+  "url": "http://my.git.repository.com",
+  "branch": "feature12",
+  "username": "user1",
+  "encrypted_password": "encrypted_value"
+}
+```
+
+- Instead of `encrypted_password` you may specify `password` but `encrypted_password` makes more sense considering that the value is stored in SCM.
+- Specifying credentials both in `attributes` and `url` will result in a validation error e.g.
+  ```log
+    INVALID MERGED CONFIGURATION
+    Number of errors: 1+
+    1. Ambiguous credentials, must be provided either in URL or as attributes.;;
+    - For Config Repo: https://your.config.repo.url at cbb047d78c239ab23b9565099e800c6fe4cc0anc
+  ```
 
 ## Svn
 
@@ -539,7 +570,7 @@ All scm materials can have filter object:
 {
   "url": "http://svn",
   "username": "user1",
-  "password": "pass1",
+  "encrypted_password": "encrypted_value",
   "check_externals": true,
   "filter": {
     "ignore": [
@@ -554,8 +585,7 @@ All scm materials can have filter object:
 }
 ```
 
-Instead of plain `password` you may specify `encrypted_password` with encrypted content
-which usually makes more sense considering that value is stored in SCM.
+Instead of `encrypted_password` you may specify `password` but `encrypted_password` makes more sense considering that the value is stored in SCM.
 
 ## Hg
 
@@ -571,7 +601,40 @@ which usually makes more sense considering that value is stored in SCM.
   "destination": "dir1",
   "auto_update": false,
   "name": "hgMaterial1",
-  "type": "hg"
+  "type": "hg",
+  "username": "user1",
+  "encrypted_password": "encrypted_value",
+  "branch": "feature"
+}
+```
+<a name="hg-material-update"/>
+
+For **GoCD >= 19.4.0 and `format_version: 5` and above**:
+
+You are advised to utilize `username` and `encrypted_password` for passing in material credentials as:
+
+```json
+{
+  "url": "repos/myhg",
+  "username": "user1",
+  "encrypted_password": "encrypted_value"
+}
+```
+
+- Instead of `encrypted_password` you may specify `password` but `encrypted_password` makes more sense considering that the value is stored in SCM.
+- Specifying credentials both in `attributes` and `url` will result in a validation error e.g.
+  ```log
+    INVALID MERGED CONFIGURATION
+    Number of errors: 1+
+    1. Ambiguous credentials, must be provided either in URL or as attributes.;;
+    - For Config Repo: https://your.config.repo.url at cbb047d78c239ab23b9565099e800c6fe4cc0anc
+  ```
+
+In addition to that, you can also leverage `branch` attribute to specify the branch for material
+
+```json
+{
+  "branch": "feature"
 }
 ```
 
@@ -581,7 +644,7 @@ which usually makes more sense considering that value is stored in SCM.
 {
   "port": "10.18.3.102:1666",
   "username": "user1",
-  "password": "pass1",
+  "encrypted_password": "encrypted_value",
   "use_tickets": false,
   "view": "//depot/dev/src...          //anything/src/...",
   "filter": {
@@ -597,8 +660,7 @@ which usually makes more sense considering that value is stored in SCM.
 }
 ```
 
-Instead of plain `password` you may specify `encrypted_password` with encrypted content
-which usually makes more sense considering that value is stored in SCM.
+Instead of `encrypted_password` you may specify `password` but `encrypted_password` makes more sense considering that the value is stored in SCM.
 
 ## Tfs
 
@@ -607,7 +669,7 @@ which usually makes more sense considering that value is stored in SCM.
   "url": "url3",
   "username": "user4",
   "domain": "example.com",
-  "password": "pass",
+  "encrypted_password": "encrypted_value",
   "project": "projectDir",
   "filter": {
     "ignore": [
@@ -622,8 +684,7 @@ which usually makes more sense considering that value is stored in SCM.
 }
 ```
 
-Instead of plain `password` you may specify `encrypted_password` with encrypted content
-which usually makes more sense considering that value is stored in SCM.
+Instead of `encrypted_password` you may specify `password` but `encrypted_password` makes more sense considering that the value is stored in SCM.
 
 ## Dependency
 
