@@ -1,4 +1,6 @@
-### 0.3.9 - Unreleased
+### 0.3.9 (2019-May-22)
+
+ * updated README documenting support credentials attributes in materials
 
 ### 0.3.8 (2019-May-01)
 
