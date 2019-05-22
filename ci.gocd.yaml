@@ -53,6 +53,7 @@ pipelines:
                       - ./tasks.sh set_version
                 - exec:
                     command: /bin/bash
+                    arguments:
                       - -c
                       - ./tasks.sh commit
                 - exec:
