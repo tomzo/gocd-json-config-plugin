@@ -14,7 +14,9 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 import java.io.File;
 import java.io.IOException;
@@ -36,6 +38,8 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
 public class JsonConfigPluginTest {
+    @Rule
+    public TemporaryFolder tempDir = new TemporaryFolder();
 
     private JsonConfigPlugin plugin;
     private Gson gson;
@@ -257,6 +261,7 @@ public class JsonConfigPluginTest {
         byte[] expectedData = IOUtils.toByteArray(getClass().getResourceAsStream("/json.svg"));
         assertArrayEquals(expectedData, actualData);
     }
+
     @Test
     public void shouldRespondSuccessToParseDirectoryRequestWhenEmpty() throws UnhandledRequestTypeException {
         DefaultGoPluginApiRequest parseDirectoryRequest = new DefaultGoPluginApiRequest("configrepo", "1.0", "parse-directory");
@@ -327,6 +332,38 @@ public class JsonConfigPluginTest {
 
         verify(goAccessor, times(1)).submit(any(GoApiRequest.class));
         assertThat(response.responseCode(), is(SUCCESS_RESPONSE_CODE));
+    }
+
+    @Test
+    public void shouldReturnListOfConfigFiles() throws UnhandledRequestTypeException, IOException {
+        DefaultGoPluginApiRequest listConfigFilesRequest = new DefaultGoPluginApiRequest("configrepo", "1.0", "config-files");
+        tempDir.newFile("test.gopipeline.json");
+        tempDir.newFile("test.goenvironment.json");
+        String requestBody = "{\n" +
+                "    \"directory\":\"" + tempDir.getRoot().getAbsolutePath() + "\"\n" +
+                "}";
+        listConfigFilesRequest.setRequestBody(requestBody);
+
+        GoPluginApiResponse response = plugin.handle(listConfigFilesRequest);
+
+        verify(goAccessor, times(1)).submit(any(GoApiRequest.class));
+        assertThat(response.responseCode(), is(SUCCESS_RESPONSE_CODE));
+        assertThat(response.responseBody(), is("{\"files\":[\"test.gopipeline.json\",\"test.goenvironment.json\"]}"));
+    }
+
+    @Test
+    public void shouldReturnEmptyListWhenNoConfigFiles() throws UnhandledRequestTypeException, IOException {
+        DefaultGoPluginApiRequest listConfigFilesRequest = new DefaultGoPluginApiRequest("configrepo", "1.0", "config-files");
+        String requestBody = "{\n" +
+                "    \"directory\":\"" + tempDir.getRoot().getAbsolutePath() + "\"\n" +
+                "}";
+        listConfigFilesRequest.setRequestBody(requestBody);
+
+        GoPluginApiResponse response = plugin.handle(listConfigFilesRequest);
+
+        verify(goAccessor, times(1)).submit(any(GoApiRequest.class));
+        assertThat(response.responseCode(), is(SUCCESS_RESPONSE_CODE));
+        assertThat(response.responseBody(), is("{\"files\":[]}"));
     }
 
     @Test

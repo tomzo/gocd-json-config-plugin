@@ -68,6 +68,9 @@ public class JsonConfigPlugin implements GoPlugin, ConfigRepoMessages {
             case REQ_PARSE_DIRECTORY:
                 ensureConfigured();
                 return handleParseDirectoryRequest(request);
+            case REQ_CONFIG_FILES:
+                ensureConfigured();
+                return handleGetConfigFiles(request);
             case REQ_PIPELINE_EXPORT:
                 return handlePipelineExportRequest(request);
             case REQ_PLUGIN_SETTINGS_CHANGED:
@@ -195,6 +198,21 @@ public class JsonConfigPlugin implements GoPlugin, ConfigRepoMessages {
             response.addResponseHeader("Content-Type", "application/json; charset=utf-8");
             response.addResponseHeader("X-Export-Filename", name + ".gopipeline.json");
             return response;
+        });
+    }
+
+    private GoPluginApiResponse handleGetConfigFiles(GoPluginApiRequest request) {
+        return handlingErrors(() -> {
+            ParsedRequest parsed = ParsedRequest.parse(request);
+            File baseDir = new File(parsed.getStringParam("directory"));
+            Map<String, List<String>> result = new HashMap<>();
+
+            ConfigDirectoryScanner scanner = new AntDirectoryScanner();
+            ArrayList<String> files = new ArrayList<>();
+            files.addAll(Arrays.asList(scanner.getFilesMatchingPattern(baseDir, getPipelinePattern(parsed))));
+            files.addAll(Arrays.asList(scanner.getFilesMatchingPattern(baseDir, getEnvironmentPattern(parsed))));
+            result.put("files", files);
+            return success(gson.toJson(result));
         });
     }
 

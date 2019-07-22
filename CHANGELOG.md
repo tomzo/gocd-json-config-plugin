@@ -1,4 +1,6 @@
-### 0.3.10 - Unreleased
+### 0.4.0 - Unreleased
+
+* Adding endpoint that lists config files for the given directory
 
 ### 0.3.9 (2019-May-22)
 
