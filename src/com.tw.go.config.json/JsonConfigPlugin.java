@@ -269,7 +269,7 @@ public class JsonConfigPlugin implements GoPlugin, ConfigRepoMessages {
 
     @Override
     public GoPluginIdentifier pluginIdentifier() {
-        return new GoPluginIdentifier("configrepo", Arrays.asList("1.0", "2.0"));
+        return new GoPluginIdentifier("configrepo", Arrays.asList("1.0", "2.0", "3.0"));
     }
 
     private void configurePlugin(PluginSettings settings) {
