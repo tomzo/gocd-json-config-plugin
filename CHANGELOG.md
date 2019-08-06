@@ -1,4 +1,5 @@
-### 0.4.1 - Unreleased
+### 0.4.1 (2019-Aug-06)
+Fixup to endpoint that lists config files
 
 ### 0.4.0 (2019-Aug-02)
 
