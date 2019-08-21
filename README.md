@@ -121,7 +121,13 @@ you can find examples of correct environments [below](#environment).
 
 Please note that it is now recommended to declare the _same_ `format_version` in each `*.gopipeline.json` or `*.goenvironment.json` file.
 
-#### GoCD server version from 19.4.0 and beyond
+#### GoCD server version from 19.8.0 and beyond
+
+Supports `format_version` value of `6`. In this version, support of `allow_only_on_success` for [approval](#approval) on stage has been added. Setting this attribute will ensure that the manual trigger will be allowed only if the previous stage is successful.
+
+Using a newer `format_version` includes all the behavior of the previous versions too.
+
+#### GoCD server version from 19.4.0 to 19.7.0
 
 Supports `format_version` value of `5`. In this version, support of `username` and `encrypted_password` for [git](#git-material-update) and [hg](#hg-material-update) material has been added. In addition to that, [hg](#hg-material-update) will also support `branch` attribute.
 
@@ -339,6 +345,7 @@ In the above example, since both pipelines are in the same group, `pipeline2` wi
 ```json
 {
   "type": "manual",
+  "allow_only_on_success": true,
   "users": [],
   "roles": [
     "manager"
