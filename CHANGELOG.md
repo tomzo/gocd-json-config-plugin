@@ -1,8 +1,10 @@
-### 0.4.4 (2019-Aug-21)
-
-### 0.4.2 - (2019-Aug)
+### 0.4.3 (2019-Aug-22)
 
 * updated README documenting `allow_only_on_success` attribute in approval
+
+### 0.4.2 (2019-Aug-21)
+
+Release deleted.
 
 ### 0.4.1 (2019-Aug-06)
 Fixup to endpoint that lists config files
