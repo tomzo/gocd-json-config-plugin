@@ -100,9 +100,9 @@ public class JsonPluginCli {
     private static void printUsageAndExit(int exitCode, JCommander cmd, String command) {
         StringBuilder out = new StringBuilder();
         if (null == command) {
-            cmd.usage(out);
+            cmd.getUsageFormatter().usage(out);
         } else {
-            cmd.usage(command, out);
+            cmd.getUsageFormatter().usage(command, out);
         }
         die(exitCode, out.toString());
     }
