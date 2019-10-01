@@ -121,6 +121,18 @@ you can find examples of correct environments [below](#environment).
 
 Please note that it is now recommended to declare the _same_ `format_version` in each `*.gopipeline.json` or `*.goenvironment.json` file.
 
+#### GoCD server version from 19.10.0 and beyond
+
+Supports `format_version` value of `9`. In this version, support of `ignore_for_scheduling` for [dependency materials](#dependency) has been added. Setting this attribute will skip scheduling the pipeline when the dependency material has changed.
+
+Using a newer `format_version` includes all the behavior of the previous versions too.
+
+#### GoCD server version from 19.9.0 and beyond
+
+Supports `format_version` value of `7` and `8`. In version `7`, support for [properties](#property) has been removed. In version `8`, support for [mingle](#mingle) has been removed.
+
+Using a newer `format_version` includes all the behavior of the previous versions too.
+
 #### GoCD server version from 19.8.0 and beyond
 
 Supports `format_version` value of `6`. In this version, support of `allow_only_on_success` for [approval](#approval) on stage has been added. Setting this attribute will ensure that the manual trigger will be allowed only if the previous stage is successful.
@@ -208,10 +220,6 @@ Any variable must contain `name` and `value` or `encrypted_value`.
       "value": "parameter"
     }
   ],
-  "mingle": {
-    "base_url": "http://mingle.example.com",
-    "project_identifier": "my_project"
-  },
   "tracking_tool": null,
   "timer": {
     "spec": "0 15 10 * * ? *"
@@ -310,6 +318,7 @@ In the above example, since both pipelines are in the same group, `pipeline2` wi
 ```
 
 ### Mingle
+**Note: Since GoCD version 19.9 and format_version 8, this is no longer supported**
 
 ```json
 {
@@ -397,13 +406,6 @@ In the above example, since both pipelines are in the same group, `pipeline2` wi
       ]
     }
   ],
-  "properties": [
-    {
-      "name": "perf",
-      "source": "test.xml",
-      "xpath": "substring-before(//report/data/all/coverage[starts-with(@type,\u0027class\u0027)]/@value, \u0027%\u0027)"
-    }
-  ],
   "tasks": [
     ...
   ]
@@ -464,6 +466,7 @@ The external artifact store is referenced by the `store_id`. The build specific 
 ```
 
 ### Property
+**Note: Since GoCD version 19.9 and format_version 7, properties are no longer supported**
 
 ```json
 {
@@ -700,7 +703,8 @@ Instead of `encrypted_password` you may specify `password` but `encrypted_passwo
   "pipeline": "pipeline2",
   "stage": "build",
   "name": "pipe2",
-  "type": "dependency"
+  "type": "dependency",
+  "ignore_for_scheduling": false
 }
 ```
 
