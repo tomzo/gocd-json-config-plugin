@@ -7,7 +7,7 @@ plugins {
 }
 
 group = 'cd.go.plugin.config.json'
-version "0.4.4"
+version "0.5.0"
 
 apply plugin: 'java'
 
