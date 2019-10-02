@@ -318,7 +318,7 @@ In the above example, since both pipelines are in the same group, `pipeline2` wi
 ```
 
 ### Mingle
-**Note: Since GoCD version 19.9 and format_version 8, this is no longer supported**
+**DEPRECATION NOTICE: Since GoCD version 19.9 and format_version 8, this is no longer supported**
 
 ```json
 {
@@ -466,7 +466,7 @@ The external artifact store is referenced by the `store_id`. The build specific 
 ```
 
 ### Property
-**Note: Since GoCD version 19.9 and format_version 7, properties are no longer supported**
+**DEPRECATION NOTICE: Since GoCD version 19.9 and format_version 7, properties are no longer supported**
 
 ```json
 {
@@ -961,10 +961,13 @@ This is actually how our GoCD builds the plugin:
 dojo "gradle test jar"
 ```
 
-Assuming you already have a working docker, you can install dojo with:
-```
-DOJO_VERSION=0.5.0
-wget -O dojo https://github.com/ai-traders/dojo/releases/download/${DOJO_VERSION}/dojo_linux_amd64
+Assuming you already have a working docker, you can install dojo by placing the executable anywhere on the PATH.
+```sh
+DOJO_VERSION=0.6.2
+# On Linux
+wget -O dojo https://github.com/kudulab/dojo/releases/download/${DOJO_VERSION}/dojo_linux_amd64
+# On OSX
+# wget -O dojo https://github.com/kudulab/dojo/releases/download/${DOJO_VERSION}/dojo_darwin_amd64
 sudo mv dojo /usr/local/bin
 sudo chmod +x /usr/local/bin/dojo
 ```
