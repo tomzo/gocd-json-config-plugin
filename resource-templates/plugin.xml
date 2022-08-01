@@ -4,9 +4,7 @@
         <name>JSON Configuration Plugin</name>
         <version>${version}</version>
         <target-go-version>${goCdVersion}</target-go-version>
-        <description>
-            Configuration plugin that supports GoCD configuration in JSON
-        </description>
+        <description>Configuration plugin that supports GoCD configuration in JSON</description>
         <vendor>
             <name>Tomasz Setkowski</name>
             <url>https://github.com/tomzo/gocd-json-config-plugin</url>

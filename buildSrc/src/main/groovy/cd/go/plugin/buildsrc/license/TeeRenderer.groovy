@@ -2,13 +2,14 @@ package cd.go.plugin.buildsrc.license
 
 import com.github.jk1.license.ProjectData
 import com.github.jk1.license.render.ReportRenderer
-import com.github.jk1.license.render.SingleInfoReportRenderer
+import com.github.jk1.license.render.TextReportRenderer
 
-class TeeRenderer extends SingleInfoReportRenderer implements ReportRenderer {
+class TeeRenderer extends TextReportRenderer implements ReportRenderer {
     ReportRenderer toDecorate
     def LICENSES = [
             'Apache License, Version 2.0',
             'Apache 2.0',
+            'Apache-2.0',
             'The Apache Software License, Version 2.0',
             'New BSD License'
     ]

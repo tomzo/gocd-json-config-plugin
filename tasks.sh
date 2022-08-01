@@ -22,7 +22,7 @@ function get_version_tag {
 command="$1"
 case "${command}" in
   build)
-    dojo "gradle test jar"
+    dojo "./gradlew test jar"
     ;;
   set_version)
     if [[ -n "$2" ]]; then
