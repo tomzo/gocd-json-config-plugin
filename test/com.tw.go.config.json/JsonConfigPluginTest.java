@@ -9,17 +9,16 @@ import com.thoughtworks.go.plugin.api.response.DefaultGoApiResponse;
 import com.thoughtworks.go.plugin.api.response.DefaultGoPluginApiResponse;
 import com.thoughtworks.go.plugin.api.response.GoApiResponse;
 import com.thoughtworks.go.plugin.api.response.GoPluginApiResponse;
-import junit.framework.TestCase;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.HashMap;
@@ -29,32 +28,28 @@ import static com.tw.go.config.json.ConfigRepoMessages.REQ_PARSE_CONTENT;
 import static com.tw.go.config.json.ConfigRepoMessages.REQ_PLUGIN_SETTINGS_CHANGED;
 import static com.tw.go.config.json.PluginSettings.*;
 import static java.lang.String.format;
-import static junit.framework.Assert.assertTrue;
-import static junit.framework.TestCase.assertEquals;
-import static junit.framework.TestCase.assertNull;
-import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.*;
-import static org.mockito.Matchers.any;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 public class JsonConfigPluginTest {
-    @Rule
-    public TemporaryFolder tempDir = new TemporaryFolder();
+    @TempDir
+    public Path tempDir;
 
     private JsonConfigPlugin plugin;
     private Gson gson;
-    private JsonParser parser;
+
     private GoApplicationAccessor goAccessor;
 
-    @Before
-    public void SetUp() throws IOException {
+    @BeforeEach
+    public void setUp() throws IOException {
         plugin = new JsonConfigPlugin();
         goAccessor = mock(GoApplicationAccessor.class);
         plugin.initializeGoApplicationAccessor(goAccessor);
         GoApiResponse settingsResponse = DefaultGoApiResponse.success("{}");
-        when(goAccessor.submit(any(GoApiRequest.class))).thenReturn(settingsResponse);
+        when(goAccessor.submit(any())).thenReturn(settingsResponse);
         gson = new Gson();
-        parser = new JsonParser();
 
         File emptyDir = new File("emptyDir");
         FileUtils.deleteDirectory(emptyDir);
@@ -74,7 +69,7 @@ public class JsonConfigPluginTest {
         GoPluginApiResponse response = plugin.handle(request);
         JsonObject jsonObjectFromResponse = getJsonObjectFromResponse(response);
         assertEquals(SUCCESS_RESPONSE_CODE, response.responseCode());
-        TestCase.assertEquals(new JsonArray(), jsonObjectFromResponse.get("errors"));
+        assertEquals(new JsonArray(), jsonObjectFromResponse.get("errors"));
 
         JsonObject expected = new JsonObject();
 
@@ -97,7 +92,7 @@ public class JsonConfigPluginTest {
         e1.addProperty("location", "foo.goenvironment.json");
         envs.add(e1);
 
-        TestCase.assertEquals(expected, jsonObjectFromResponse);
+        assertEquals(expected, jsonObjectFromResponse);
     }
 
     @Test
@@ -229,7 +224,7 @@ public class JsonConfigPluginTest {
 
     private JsonObject getJsonObjectFromResponse(GoPluginApiResponse response) {
         String responseBody = response.responseBody();
-        return parser.parse(responseBody).getAsJsonObject();
+        return JsonParser.parseString(responseBody).getAsJsonObject();
     }
 
     @Test
@@ -255,8 +250,8 @@ public class JsonConfigPluginTest {
         GoPluginApiResponse response = plugin.handle(request);
         assertThat(response.responseCode(), is(SUCCESS_RESPONSE_CODE));
         JsonObject jsonObject = getJsonObjectFromResponse(response);
-        Assert.assertEquals(jsonObject.entrySet().size(), 2);
-        Assert.assertEquals(jsonObject.get("content_type").getAsString(), "image/svg+xml");
+        assertEquals(jsonObject.entrySet().size(), 2);
+        assertEquals(jsonObject.get("content_type").getAsString(), "image/svg+xml");
         byte[] actualData = Base64.getDecoder().decode(jsonObject.get("data").getAsString());
         byte[] expectedData = IOUtils.toByteArray(getClass().getResourceAsStream("/json.svg"));
         assertArrayEquals(expectedData, actualData);
@@ -337,10 +332,10 @@ public class JsonConfigPluginTest {
     @Test
     public void shouldReturnListOfConfigFiles() throws UnhandledRequestTypeException, IOException {
         DefaultGoPluginApiRequest listConfigFilesRequest = new DefaultGoPluginApiRequest("configrepo", "1.0", "config-files");
-        tempDir.newFile("test.gopipeline.json");
-        tempDir.newFile("test.goenvironment.json");
+        Files.createFile(tempDir.resolve("test.gopipeline.json"));
+        Files.createFile(tempDir.resolve("test.goenvironment.json"));
         String requestBody = "{\n" +
-                "    \"directory\":\"" + tempDir.getRoot().getAbsolutePath() + "\"\n" +
+                "    \"directory\":\"" + tempDir.toFile().getAbsolutePath() + "\"\n" +
                 "}";
         listConfigFilesRequest.setRequestBody(requestBody);
 
@@ -355,7 +350,7 @@ public class JsonConfigPluginTest {
     public void shouldReturnEmptyListWhenNoConfigFiles() throws UnhandledRequestTypeException, IOException {
         DefaultGoPluginApiRequest listConfigFilesRequest = new DefaultGoPluginApiRequest("configrepo", "1.0", "config-files");
         String requestBody = "{\n" +
-                "    \"directory\":\"" + tempDir.getRoot().getAbsolutePath() + "\"\n" +
+                "    \"directory\":\"" + tempDir.toFile().getAbsolutePath() + "\"\n" +
                 "}";
         listConfigFilesRequest.setRequestBody(requestBody);
 

@@ -3,19 +3,19 @@ package com.tw.go.config.json;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import org.apache.commons.io.FileUtils;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 
-import static junit.framework.TestCase.fail;
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.startsWith;
-import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class ConfigDirectoryParserTest {
     private final File directory = new File("json-plugin-test-dir");
@@ -23,7 +23,7 @@ public class ConfigDirectoryParserTest {
     private String pipe1String;
     private String devenvString;
 
-    @Before
+    @BeforeEach
     public void SetUp() throws Exception {
         FileUtils.deleteDirectory(directory);
 
@@ -48,17 +48,12 @@ public class ConfigDirectoryParserTest {
 
     @Test
     public void shouldParseEmptyDirectory() throws Exception {
-        JsonConfigCollection result = parser.parseDirectory(directory);
+        parser.parseDirectory(directory);
     }
 
     @Test
     public void shouldThrowWhenDirectoryDoesNotExist() {
-        try {
-            JsonConfigCollection result = parser.parseDirectory(new File(directory, ".doesNotExist"));
-            fail("should have thrown");
-        } catch (Exception ex) {
-            //good
-        }
+        assertThrows(RuntimeException.class, () -> parser.parseDirectory(new File(directory, ".doesNotExist")));
     }
 
     @Test

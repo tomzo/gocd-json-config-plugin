@@ -1,4 +1,5 @@
-### 0.5.1 - Unreleased
+### 0.6.0 (2022-Jul-31)
+* Upgrade all dependencies to latest, patched versions
 
 ### 0.5.0 (2019-Oct-02)
 

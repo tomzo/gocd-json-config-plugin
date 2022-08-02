@@ -4,15 +4,13 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static junit.framework.TestCase.assertNull;
-import static junit.framework.TestCase.fail;
 import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.core.Is.is;
-import static org.hamcrest.core.IsCollectionContaining.hasItem;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class JsonConfigCollectionTest {
 
@@ -22,7 +20,7 @@ public class JsonConfigCollectionTest {
     private JsonObject devEnv;
     private JsonObject pipeInGroup;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         jsonCollection = new JsonConfigCollection();
 
@@ -105,12 +103,8 @@ public class JsonConfigCollectionTest {
         jsonCollection.addEnvironment(envWithVersion(1), "env1.json");
         jsonCollection.addEnvironment(new JsonObject(), "env2.json");
 
-        try {
-            jsonCollection.updateVersionFromPipelinesAndEnvironments();
-            fail("Should have failed to find a unique version");
-        } catch (RuntimeException e) {
-            assertThat(e.getMessage(), containsString("Versions across files are not unique"));
-        }
+        RuntimeException e = assertThrows(RuntimeException.class, () -> jsonCollection.updateVersionFromPipelinesAndEnvironments());
+        assertThat(e.getMessage(), containsString("Versions across files are not unique"));
     }
 
     private JsonElement envWithVersion(int version) {
