@@ -26,7 +26,7 @@ class ConfigDirectoryParser {
         try {
             for (String environmentFile : scanner.getFilesMatchingPattern(baseDir, environmentPattern)) {
                 currentFile = new File(baseDir, environmentFile);
-                JsonElement environment = JsonConfigParser.parseStream(config, parser, new FileInputStream(currentFile), currentFile.getPath());
+                JsonElement environment = JsonConfigParser.parseStream(config, new FileInputStream(currentFile), currentFile.getPath());
                 if (null != environment) {
                     config.addEnvironment(environment, environmentFile);
                 }
@@ -34,7 +34,7 @@ class ConfigDirectoryParser {
 
             for (String pipelineFile : scanner.getFilesMatchingPattern(baseDir, pipelinePattern)) {
                 currentFile = new File(baseDir, pipelineFile);
-                JsonElement pipeline = JsonConfigParser.parseStream(config, parser, new FileInputStream(currentFile), currentFile.getPath());
+                JsonElement pipeline = JsonConfigParser.parseStream(config, new FileInputStream(currentFile), currentFile.getPath());
                 if (null != pipeline) {
                     config.addPipeline(pipeline, pipelineFile);
                 }

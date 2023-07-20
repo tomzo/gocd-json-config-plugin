@@ -96,4 +96,5 @@ buildNumber.properties
 /docker/imagerc*
 /docker/libs/
 /Idefile.to_be_tested
-/test/integration/test_ide_work/json-example/
+/src/test/integration/test_ide_work/json-example/
+src/main/resources-generated/
