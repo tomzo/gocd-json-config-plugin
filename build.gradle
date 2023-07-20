@@ -1,44 +1,56 @@
-import cd.go.plugin.buildsrc.license.NoticeFileGenerator
-import cd.go.plugin.buildsrc.license.TeeRenderer
-import com.github.jk1.license.render.SimpleHtmlReportRenderer
-
-plugins {
-    id "com.github.jk1.dependency-license-report"
-}
-
-group 'cd.go.plugin.config.json'
-version "0.6.0"
-
 apply plugin: 'java'
+apply from: "https://raw.githubusercontent.com/gocd/gocd-plugin-gradle-task-helpers/master/helper.gradle?_=${(int) (new Date().toInstant().epochSecond / 60)}"
 
-project.ext {
-    pluginDesc = [
-            version: project.version,
-            goCdVersion: '20.4.0'
-    ]
+gocdPlugin {
+    id = 'json.config.plugin'
+    pluginVersion = '0.6.1'
+    goCdVersion = '20.4.0'
+    name = 'JSON Configuration Plugin'
+    description = 'Configuration plugin that supports GoCD configuration in JSON'
+    vendorName = 'Tomasz Setkowski'
+    vendorUrl = 'https://github.com/tomzo/gocd-json-config-plugin'
 
-    pluginApiVersion = '20.3.0'
+    githubRepo {
+        owner = System.getenv('GITHUB_USER') ?: 'bob'
+        repo = 'gocd-json-config-plugin'
+        token = System.getenv('GITHUB_TOKEN') ?: 'bad-token'
+    }
+
+    pluginProject = project
+
+    prerelease = !"No".equalsIgnoreCase(System.getenv('PRERELEASE'))
+    assetsToRelease = [project.tasks.jar]
 }
 
-sourceCompatibility = 1.11
-targetCompatibility = 1.11
+group = 'cd.go.plugin.config.json'
+version = gocdPlugin.fullVersion(project)
 
 repositories {
     mavenCentral()
 }
 
+java {
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+}
+
+ext {
+    pluginApiVersion = '23.1.0'
+}
+
 dependencies {
-    implementation group: 'com.google.code.gson', name: 'gson', version: '2.9.1'
-    implementation group: 'commons-io', name: 'commons-io', version: '2.11.0'
-    implementation group: 'org.apache.ant', name: 'ant', version: '1.10.12'
+    implementation group: 'com.google.code.gson', name: 'gson', version: '2.10.1'
+    implementation group: 'org.apache.ant', name: 'ant', version: '1.10.13'
     implementation group: 'com.beust', name: 'jcommander', version: '1.82'
 
     compileOnly group: 'cd.go.plugin', name: 'go-plugin-api', version: project.pluginApiVersion
     testImplementation group: 'cd.go.plugin', name: 'go-plugin-api', version: project.pluginApiVersion
 
-    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.9.0'
-    testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.9.0'
-    testImplementation group: 'org.mockito', name: 'mockito-core', version: '4.6.1'
+    testImplementation platform('org.junit:junit-bom:5.9.3')
+    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api'
+    testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine'
+    testRuntimeOnly group: 'org.junit.platform', name: 'junit-platform-launcher'
+    testImplementation group: 'org.mockito', name: 'mockito-core', version: '5.4.0'
     testImplementation group: 'org.hamcrest', name: 'hamcrest', version: '2.2'
 }
 
@@ -47,23 +59,6 @@ processResources {
     from("resource-templates") {
         filesMatching('*') {
             expand project.pluginDesc
-        }
-    }
-}
-
-sourceSets {
-    main {
-        java {
-            srcDirs = ['src']
-        }
-        resources {
-            srcDir 'resources'
-        }
-    }
-
-    test {
-        java {
-            srcDirs = ["test"]
         }
     }
 }
@@ -86,14 +81,12 @@ jar {
         attributes 'Main-Class': 'com.tw.go.config.json.cli.JsonPluginCli'
     }
 
-    from(generateLicenseReport) {
-        into "dependency-license-report"
-        exclude "NOTICE.txt"
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
     }
 
-    from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
-}
-
-licenseReport {
-    renderers = [new NoticeFileGenerator(new TeeRenderer(new SimpleHtmlReportRenderer()), "${project.buildDir}/reports/dependency-license/")]
+    exclude "allow.class" // Noise from Ant
+    exclude "META-INF/*.txt"
+    exclude "META-INF/*.LIST"
+    exclude "META-INF/versions/**"
 }

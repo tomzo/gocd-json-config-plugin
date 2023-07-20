@@ -1,3 +1,7 @@
+### 0.6.1+
+
+Please see the [releases page](https://github.com/tomzo/gocd-json-config-plugin/releases) for changelogs.
+
 ### 0.6.0 (2022-Jul-31)
 * Upgrade all dependencies to latest, patched versions
 

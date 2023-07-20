@@ -15,11 +15,12 @@ import com.thoughtworks.go.plugin.api.request.GoPluginApiRequest;
 import com.thoughtworks.go.plugin.api.response.DefaultGoPluginApiResponse;
 import com.thoughtworks.go.plugin.api.response.GoApiResponse;
 import com.thoughtworks.go.plugin.api.response.GoPluginApiResponse;
-import org.apache.commons.io.IOUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.function.Supplier;
 
@@ -85,12 +86,10 @@ public class JsonConfigPlugin implements GoPlugin, ConfigRepoMessages {
     }
 
     private GoPluginApiResponse handleGetIconRequest() {
-        try {
+        try (InputStream is = Objects.requireNonNull(getClass().getResourceAsStream("/json.svg"))) {
             JsonObject jsonObject = new JsonObject();
-            byte[] contents = IOUtils.toByteArray(getClass().getResourceAsStream("/json.svg"));
-
             jsonObject.addProperty("content_type", "image/svg+xml");
-            jsonObject.addProperty("data", Base64.getEncoder().encodeToString(contents));
+            jsonObject.addProperty("data", Base64.getEncoder().encodeToString(is.readAllBytes()));
             return success(gson.toJson(jsonObject));
         } catch (IOException e) {
             return error(e.getMessage());
@@ -127,11 +126,12 @@ public class JsonConfigPlugin implements GoPlugin, ConfigRepoMessages {
     }
 
     private GoPluginApiResponse handleGetPluginSettingsView() throws IOException {
-        Map<String, Object> response = new HashMap<>();
-        response.put("template", IOUtils.toString(getClass().getResourceAsStream("/plugin-settings.template.html"), "UTF-8"));
-        return success(gson.toJson(response));
+        try (InputStream is = Objects.requireNonNull(getClass().getResourceAsStream("/plugin-settings.template.html"))) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("template", new String(is.readAllBytes(), StandardCharsets.UTF_8));
+            return success(gson.toJson(response));
+        }
     }
-
     private GoPluginApiResponse handleValidatePluginSettingsConfiguration() {
         List<Map<String, Object>> response = new ArrayList<>();
         return success(gson.toJson(response));
