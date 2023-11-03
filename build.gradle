@@ -43,8 +43,8 @@ dependencies {
     implementation group: 'org.apache.ant', name: 'ant', version: '1.10.14'
     implementation group: 'com.beust', name: 'jcommander', version: '1.82'
 
-    compileOnly group: 'cd.go.plugin', name: 'go-plugin-api', version: project.pluginApiVersion
-    testImplementation group: 'cd.go.plugin', name: 'go-plugin-api', version: project.pluginApiVersion
+    compileOnly group: 'cd.go.plugin', name: 'go-plugin-api', version: pluginApiVersion
+    testImplementation group: 'cd.go.plugin', name: 'go-plugin-api', version: pluginApiVersion
 
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api'
