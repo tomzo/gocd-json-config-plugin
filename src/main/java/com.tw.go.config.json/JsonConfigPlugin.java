@@ -158,7 +158,7 @@ public class JsonConfigPlugin implements GoPlugin, ConfigRepoMessages {
         return handlingErrors(() -> {
             ParsedRequest parsed = ParsedRequest.parse(request);
             FilenameMatcher matcher = new FilenameMatcher(getPipelinePattern(parsed), getEnvironmentPattern(parsed));
-            Map<String, String> contents = parsed.getParam("contents");
+            Map<String, String> contents = parsed.getParam("contents", String.class);
 
             JsonConfigCollection result = new JsonConfigCollection();
             contents.forEach((filename, content) -> {
@@ -190,7 +190,7 @@ public class JsonConfigPlugin implements GoPlugin, ConfigRepoMessages {
         return handlingErrors(() -> {
             ParsedRequest parsed = ParsedRequest.parse(request);
 
-            Map<String, Object> pipeline = parsed.getParam("pipeline");
+            Map<String, Object> pipeline = parsed.getParam("pipeline", Object.class);
             String name = (String) pipeline.get("name");
 
             DefaultGoPluginApiResponse response = success(gson.toJson(Collections.singletonMap("pipeline", prettyPrint.toJson(pipeline))));

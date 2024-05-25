@@ -5,6 +5,8 @@ import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
 import com.thoughtworks.go.plugin.api.request.GoPluginApiRequest;
 
+import java.util.Map;
+
 import static java.lang.String.format;
 
 class ParsedRequest {
@@ -15,7 +17,6 @@ class ParsedRequest {
     private static final String PARAM_NOT_A_STRING_MESSAGE = "Expected `%s` param in request type `%s` to be a string";
     private static final String PARAM_FAILED_TO_PARSE_TO_TYPE = "Failed to parse parameter `%s` for request type `%s`: %s";
     private static final String PARAM_CONFIGURATIONS = "configurations";
-    private static final String INVALID_REPO_CONFIGURATION_KEY = "Config repo configuration has invalid key `%s`";
     private final String requestName;
     private final JsonObject params;
 
@@ -70,7 +71,7 @@ class ParsedRequest {
         }
     }
 
-    <T> T getParam(String paramName) {
+    <V> Map<String, V> getParam(String paramName, Class<V> valueClass) {
         try {
             JsonElement json = params.get(paramName);
 
@@ -78,7 +79,7 @@ class ParsedRequest {
                 throw new RequestParseException(format(MISSING_PARAM_MESSAGE, paramName, requestName));
             }
 
-            return GSON.fromJson(json, new TypeToken<T>() {}.getType());
+            return GSON.fromJson(json, TypeToken.getParameterized(Map.class, String.class, valueClass).getType());
         } catch (Exception e) {
             throw new RequestParseException(format(PARAM_FAILED_TO_PARSE_TO_TYPE, paramName, requestName, e.getMessage()));
         }
