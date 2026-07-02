@@ -5,8 +5,8 @@ apply from: "https://raw.githubusercontent.com/gocd/gocd-plugin-gradle-task-help
 
 gocdPlugin {
     id = 'json.config.plugin'
-    pluginVersion = '1.0.0'
-    goCdVersion = '22.1.0'
+    pluginVersion = '2.0.0'
+    goCdVersion = '24.1.0'
     name = 'JSON Configuration Plugin'
     description = 'Configuration plugin that supports GoCD configuration in JSON'
     vendorName = 'Tomasz Setkowski'
@@ -33,12 +33,12 @@ repositories {
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
 }
 
 tasks.withType(JavaCompile).configureEach {
-    options.release = 17
+    options.release = 21
 }
 
 ext {
