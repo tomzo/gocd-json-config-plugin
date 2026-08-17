@@ -5,7 +5,7 @@ apply from: "https://raw.githubusercontent.com/gocd/gocd-plugin-gradle-task-help
 
 gocdPlugin {
     id = 'json.config.plugin'
-    pluginVersion = '2.0.0'
+    pluginVersion = '2.1.0'
     goCdVersion = '24.1.0'
     name = 'JSON Configuration Plugin'
     description = 'Configuration plugin that supports GoCD configuration in JSON'
@@ -49,8 +49,8 @@ dependencies {
     implementation('com.google.code.gson:gson:2.14.0') {
         exclude(module: 'error_prone_annotations') // Not needed at runtime
     }
-    implementation 'org.apache.ant:ant:1.10.17'
-    implementation 'com.beust:jcommander:1.82'
+    implementation 'org.codehaus.plexus:plexus-utils:4.0.3'
+    implementation 'org.jcommander:jcommander:3.0'
 
     compileOnly "cd.go.plugin:go-plugin-api:$pluginApiVersion"
     testImplementation "cd.go.plugin:go-plugin-api:$pluginApiVersion"
@@ -79,23 +79,18 @@ test {
     }
 }
 
-// create a fat jar with all dependencies
+// Bundle dependencies as nested jars under lib/, which GoCD adds to the plugin classpath.
+// Bootstrap keeps the same jar runnable with `java -jar` for CLI syntax checking.
 jar {
     archiveBaseName = project.name
     preserveFileTimestamps = false
     reproducibleFileOrder = true
-    duplicatesStrategy = DuplicatesStrategy.INCLUDE
 
     manifest {
-        attributes 'Main-Class': 'com.tw.go.config.json.cli.JsonPluginCli'
+        attributes 'Main-Class': 'com.tw.go.config.json.cli.Bootstrap'
     }
 
-    from {
-        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    from(configurations.runtimeClasspath) {
+        into 'lib/'
     }
-
-    exclude "allow.class" // Noise from Ant
-    exclude "META-INF/*.txt"
-    exclude "META-INF/*.LIST"
-    exclude "META-INF/versions/**"
 }

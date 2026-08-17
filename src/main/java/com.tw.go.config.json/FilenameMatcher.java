@@ -1,6 +1,6 @@
 package com.tw.go.config.json;
 
-import org.apache.tools.ant.types.selectors.SelectorUtils;
+import org.codehaus.plexus.util.SelectorUtils;
 
 import java.io.File;
 
@@ -26,7 +26,7 @@ class FilenameMatcher {
     }
 
     /**
-     * Ripped from {@link org.apache.tools.ant.DirectoryScanner}
+     * Ripped from `org.codehaus.plexus.util.DirectoryScanner`
      */
     private static String normalizePattern(String p) {
         String pattern = p.replace('/', File.separatorChar)

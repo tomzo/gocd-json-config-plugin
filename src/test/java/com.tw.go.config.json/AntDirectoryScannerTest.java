@@ -87,4 +87,120 @@ public class AntDirectoryScannerTest {
         assertThat(xmlFilesOnly.length, is(5));
         assertThat(asList(xmlFilesOnly), hasItems("1/a/abc.xml", "2/d/def.gif", "3/ghi.xml", "mno.jpg", "stu.xml"));
     }
+
+    @Test
+    public void shouldMatchZeroDirectoriesWithDoubleStarInMiddleOfPattern() throws Exception {
+        Files.createDirectories(tempDir.resolve("a").resolve("b").resolve("c"));
+        Files.createFile(tempDir.resolve("a/found.xml"));
+        Files.createFile(tempDir.resolve("a/b/c/found.xml"));
+        Files.createFile(tempDir.resolve("a/b/c/other.txt"));
+
+        String[] matches = scanner.getFilesMatchingPattern(tempDir.toFile(), "a/**/found.xml");
+
+        assertThat(matches.length, is(2));
+        assertThat(asList(matches), hasItems("a/found.xml", "a/b/c/found.xml"));
+    }
+
+    @Test
+    public void shouldMatchSingleCharacterWithQuestionMark() throws Exception {
+        Files.createFile(tempDir.resolve("a1.xml"));
+        Files.createFile(tempDir.resolve("a22.xml"));
+
+        String[] matches = scanner.getFilesMatchingPattern(tempDir.toFile(), "a?.xml");
+
+        assertThat(matches.length, is(1));
+        assertThat(asList(matches), hasItems("a1.xml"));
+    }
+
+    @Test
+    public void shouldNotScanVersionControlMetadataDirectories() throws Exception {
+        Files.createDirectories(tempDir.resolve(".git"));
+        Files.createDirectories(tempDir.resolve(".svn"));
+        Files.createFile(tempDir.resolve(".git/config.xml"));
+        Files.createFile(tempDir.resolve(".svn/entries.xml"));
+        Files.createFile(tempDir.resolve("real.xml"));
+
+        String[] matches = scanner.getFilesMatchingPattern(tempDir.toFile(), "**/*.xml");
+
+        assertThat(matches.length, is(1));
+        assertThat(asList(matches), hasItems("real.xml"));
+    }
+
+    @Test
+    public void shouldFollowSymlinkedDirectoriesResolvingInsideBaseDirectory() throws Exception {
+        Files.createDirectories(tempDir.resolve("real"));
+        Files.createFile(tempDir.resolve("real/inside.xml"));
+        Files.createFile(tempDir.resolve("top.xml"));
+        Files.createSymbolicLink(tempDir.resolve("linkdir"), tempDir.resolve("real"));
+
+        String[] matches = scanner.getFilesMatchingPattern(tempDir.toFile(), "**/*.xml");
+
+        assertThat(matches.length, is(3));
+        assertThat(asList(matches), hasItems("real/inside.xml", "linkdir/inside.xml", "top.xml"));
+    }
+
+    @Test
+    public void shouldNotIncludeFilesUnderSymlinkedDirectoriesResolvingOutsideBaseDirectory(@TempDir Path outsideDir) throws Exception {
+        Files.createFile(outsideDir.resolve("secret.xml"));
+        Files.createFile(tempDir.resolve("real.xml"));
+        Files.createSymbolicLink(tempDir.resolve("escapedir"), outsideDir);
+
+        String[] matches = scanner.getFilesMatchingPattern(tempDir.toFile(), "**/*.xml");
+
+        assertThat(matches.length, is(1));
+        assertThat(asList(matches), hasItems("real.xml"));
+    }
+
+    @Test
+    public void shouldIncludeSymlinkedFilesResolvingInsideBaseDirectory() throws Exception {
+        Files.createFile(tempDir.resolve("real.xml"));
+        Files.createSymbolicLink(tempDir.resolve("link.xml"), tempDir.resolve("real.xml"));
+
+        String[] matches = scanner.getFilesMatchingPattern(tempDir.toFile(), "*.xml");
+
+        assertThat(matches.length, is(2));
+        assertThat(asList(matches), hasItems("real.xml", "link.xml"));
+    }
+
+    @Test
+    public void shouldNotIncludeSymlinkedFilesResolvingOutsideBaseDirectory(@TempDir Path outsideDir) throws Exception {
+        Files.createFile(outsideDir.resolve("secret.xml"));
+        Files.createFile(tempDir.resolve("real.xml"));
+        Files.createSymbolicLink(tempDir.resolve("escape.xml"), outsideDir.resolve("secret.xml"));
+        Files.createSymbolicLink(tempDir.resolve("broken.xml"), tempDir.resolve("does-not-exist.xml"));
+
+        String[] matches = scanner.getFilesMatchingPattern(tempDir.toFile(), "*.xml");
+
+        assertThat(matches.length, is(1));
+        assertThat(asList(matches), hasItems("real.xml"));
+    }
+
+    @Test
+    public void shouldTerminateOnSymlinkCyclesWithEveryResultResolvingInsideBaseDirectory() throws Exception {
+        Files.createDirectories(tempDir.resolve("d"));
+        Files.createFile(tempDir.resolve("d/f.xml"));
+        Files.createSymbolicLink(tempDir.resolve("d/loop"), tempDir);
+
+        // The cycle produces duplicate paths to the same file (bounded by the OS's symlink
+        // resolution limit), but the scan terminates and never escapes the base directory
+        String[] matches = scanner.getFilesMatchingPattern(tempDir.toFile(), "**/*.xml");
+
+        assertThat(asList(matches), hasItems("d/f.xml"));
+        for (String match : matches) {
+            assertThat(tempDir.resolve(match).toRealPath(), is(tempDir.resolve("d/f.xml").toRealPath()));
+        }
+    }
+
+    @Test
+    public void shouldScanWhenBaseDirectoryItselfIsASymlink() throws Exception {
+        Files.createDirectories(tempDir.resolve("actual"));
+        Files.createFile(tempDir.resolve("actual/found.xml"));
+        Path linkToBase = tempDir.resolve("link-to-base");
+        Files.createSymbolicLink(linkToBase, tempDir.resolve("actual"));
+
+        String[] matches = scanner.getFilesMatchingPattern(linkToBase.toFile(), "*.xml");
+
+        assertThat(matches.length, is(1));
+        assertThat(asList(matches), hasItems("found.xml"));
+    }
 }
